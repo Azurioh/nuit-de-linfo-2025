@@ -1,0 +1,272 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  required?: boolean;
+}
+
+const { id, label, required = false } = Astro.props;
+---
+
+<div class="roulette-group">
+  <label>{label}{required && <span aria-label="requis">*</span>}</label>
+  <div class="roulette-container">
+    <div class="roulette-slot">
+      <div class="roulette-label">Jour</div>
+      <div class="roulette-display" data-roulette="day">
+        <div class="roulette-numbers" data-roulette-numbers="day"></div>
+      </div>
+    </div>
+    <div class="roulette-separator">/</div>
+    <div class="roulette-slot">
+      <div class="roulette-label">Mois</div>
+      <div class="roulette-display" data-roulette="month">
+        <div class="roulette-numbers" data-roulette-numbers="month"></div>
+      </div>
+    </div>
+    <div class="roulette-separator">/</div>
+    <div class="roulette-slot">
+      <div class="roulette-label">Année</div>
+      <div class="roulette-display" data-roulette="year">
+        <div class="roulette-numbers" data-roulette-numbers="year"></div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="spin-btn" data-spin-btn>🎰 Lancer les roulettes</button>
+  <input type="hidden" id={id} name={id} data-roulette-input />
+</div>
+
+<script>
+  const spinBtn = document.querySelector('[data-spin-btn]');
+  const hiddenInput = document.querySelector('[data-roulette-input]') as HTMLInputElement;
+
+  const dayDisplay = document.querySelector('[data-roulette-numbers="day"]') as HTMLElement;
+  const monthDisplay = document.querySelector('[data-roulette-numbers="month"]') as HTMLElement;
+  const yearDisplay = document.querySelector('[data-roulette-numbers="year"]') as HTMLElement;
+
+  let currentDay = 15;
+  let currentMonth = 6;
+  let currentYear = 2000;
+
+  function initializeRoulettes() {
+    if (dayDisplay) dayDisplay.textContent = String(currentDay).padStart(2, '0');
+    if (monthDisplay) monthDisplay.textContent = String(currentMonth).padStart(2, '0');
+    if (yearDisplay) yearDisplay.textContent = String(currentYear);
+    updateHiddenInput();
+  }
+
+  function updateHiddenInput() {
+    if (hiddenInput) {
+      const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+      hiddenInput.value = dateStr;
+    }
+  }
+
+  function spinRoulette(
+    element: HTMLElement,
+    min: number,
+    max: number,
+    duration: number,
+    callback: (finalValue: number) => void
+  ) {
+    const startTime = Date.now();
+    const finalValue = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      if (progress < 1) {
+        const randomValue = Math.floor(Math.random() * (max - min + 1)) + min;
+        element.textContent = String(randomValue).padStart(2, '0');
+        element.style.transform = `translateY(${Math.sin(progress * Math.PI * 10) * 5}px)`;
+        requestAnimationFrame(animate);
+      } else {
+        element.textContent = String(finalValue).padStart(finalValue >= 1000 ? 0 : 2, '0');
+        element.style.transform = 'translateY(0)';
+        callback(finalValue);
+      }
+    };
+
+    animate();
+  }
+
+  if (spinBtn) {
+    spinBtn.addEventListener('click', () => {
+      spinBtn.setAttribute('disabled', 'true');
+
+      let completedSpins = 0;
+      const totalSpins = 3;
+
+      const onSpinComplete = () => {
+        completedSpins++;
+        if (completedSpins === totalSpins) {
+          updateHiddenInput();
+          spinBtn.removeAttribute('disabled');
+        }
+      };
+
+      spinRoulette(dayDisplay, 1, 31, 2000, (value) => {
+        currentDay = value;
+        onSpinComplete();
+      });
+
+      setTimeout(() => {
+        spinRoulette(monthDisplay, 1, 12, 2500, (value) => {
+          currentMonth = value;
+          onSpinComplete();
+        });
+      }, 300);
+
+      setTimeout(() => {
+        spinRoulette(yearDisplay, 1950, 2010, 3000, (value) => {
+          currentYear = value;
+          onSpinComplete();
+        });
+      }, 600);
+    });
+  }
+
+  initializeRoulettes();
+</script>
+
+<style>
+  .roulette-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  label {
+    font-weight: 500;
+    color: #FFFFFF;
+    font-size: 1rem;
+  }
+
+  .roulette-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgb(30, 30, 30);
+    border: 2px solid rgb(203, 163, 35);
+    border-radius: 20px;
+    box-shadow:
+      0 4px 15px rgba(203, 163, 35, 0.2),
+      inset 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .roulette-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .roulette-label {
+    font-size: 0.75rem;
+    color: rgb(203, 163, 35);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .roulette-display {
+    background: rgb(13, 13, 13);
+    border: 2px solid rgb(80, 80, 80);
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    min-width: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .roulette-display::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(203, 163, 35, 0.5), transparent);
+  }
+
+  .roulette-numbers {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgb(203, 163, 35);
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px rgba(203, 163, 35, 0.5);
+    transition: transform 0.1s ease;
+  }
+
+  .roulette-separator {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgb(80, 80, 80);
+  }
+
+  .spin-btn {
+    padding: 1rem;
+    background: linear-gradient(135deg, rgb(203, 163, 35), rgb(180, 140, 20));
+    color: rgb(13, 13, 13);
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow:
+      0 4px 15px rgba(203, 163, 35, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .spin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 20px rgba(203, 163, 35, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgb(220, 180, 50), rgb(203, 163, 35));
+  }
+
+  .spin-btn:active {
+    transform: translateY(0);
+  }
+
+  .spin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 500px) {
+    .roulette-container {
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    .roulette-display {
+      min-width: 50px;
+      padding: 0.75rem 1rem;
+    }
+
+    .roulette-numbers {
+      font-size: 1.5rem;
+    }
+
+    .roulette-separator {
+      font-size: 1.5rem;
+    }
+
+    .spin-btn {
+      font-size: 0.9rem;
+    }
+  }
+</style>
