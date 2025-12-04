@@ -1,18 +1,32 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Deserialize)]
 pub struct ChatRequest {
     pub prompt: String,
+    pub conversation_id: Option<Uuid>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Message {
+    pub role: String,
+    pub content: String,
 }
 
 #[derive(Serialize)]
-pub struct OllamaRequest {
+pub struct OllamaChatRequest {
     pub model: String,
-    pub prompt: String,
+    pub messages: Vec<Message>,
     pub stream: bool,
 }
 
 #[derive(Deserialize)]
 pub struct OllamaResponse {
-    pub response: String,
+    pub message: Message,
+    pub done: bool,
+}
+
+pub struct ConversationSession {
+    pub messages: Vec<Message>,
+    pub last_activity: std::time::Instant,
 }
