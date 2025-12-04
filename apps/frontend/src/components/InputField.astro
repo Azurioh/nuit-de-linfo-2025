@@ -10,7 +10,7 @@ interface Props {
 const { id, label, type = 'text', required = false, placeholder } = Astro.props;
 ---
 
-<div class="input-group">
+<div class="input-group" data-input-container>
   <label for={id}>{label}{required && <span aria-label="requis">*</span>}</label>
   <input
     id={id}
@@ -25,19 +25,46 @@ const { id, label, type = 'text', required = false, placeholder } = Astro.props;
 
 <script>
   const inputFields = document.querySelectorAll('[data-input-field]');
+  
   inputFields.forEach(input => {
     input.addEventListener('input', () => {
-      const keyEvent = new KeyboardEvent('keydown', {
-        key: 'e',
-        code: 'KeyE',
-        bubbles: true
-      });
-      document.dispatchEvent(keyEvent);
-      (input as HTMLInputElement).disabled = true;
-      setTimeout(() => {
-        (input as HTMLInputElement).disabled = false;
-        input.focus();
-      }, 2000);
+      // Choisir aléatoirement entre 2 actions: 0 = filtre layout, 1 = téléportation
+      const action = Math.floor(Math.random() * 2);
+      
+      if (action === 0) {
+        // Action 1: Déclencher le filtre du layout
+        const keyEvent = new KeyboardEvent('keydown', {
+          key: 'e',
+          code: 'KeyE',
+          bubbles: true
+        });
+        document.dispatchEvent(keyEvent);
+        
+        (input as HTMLInputElement).disabled = true;
+        setTimeout(() => {
+          (input as HTMLInputElement).disabled = false;
+          input.focus();
+        }, 2000);
+      } else {
+        // Action 2: Téléporter l'input à un endroit aléatoire
+        const container = input.closest('[data-input-container]') as HTMLElement;
+        if (container) {
+          // Faire perdre le focus avant la téléportation
+          (input as HTMLInputElement).blur();
+          
+          const maxX = Math.max(0, window.innerWidth - container.offsetWidth - 50);
+          const maxY = Math.max(0, window.innerHeight - container.offsetHeight - 50);
+          
+          const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+          const randomY = Math.max(20, Math.floor(Math.random() * maxY));
+          
+          container.style.position = 'fixed';
+          container.style.left = `${randomX}px`;
+          container.style.top = `${randomY}px`;
+          container.style.transition = 'all 0.3s ease';
+          container.style.zIndex = '9998';
+        }
+      }
     });
   });
 </script>
@@ -50,15 +77,18 @@ const { id, label, type = 'text', required = false, placeholder } = Astro.props;
   }
   label {
     font-weight: 500;
+    color: #FFFFFF;
   }
   input {
     padding: 0.75rem;
-    border: 1px solid #ccc;
+    border: 1px solid rgb(80, 80, 80);
     border-radius: 20px;
     font-size: 1rem;
+    background: rgb(30, 30, 30);
+    color: #FFFFFF;
   }
   input:focus {
-    outline: 2px solid #0066cc;
+    outline: 2px solid rgb(203, 163, 35);
     outline-offset: 2px;
   }
 </style>
