@@ -23,24 +23,6 @@ const { id, label, type = 'text', required = false, placeholder } = Astro.props;
   />
 </div>
 
-<script>
-  const inputFields = document.querySelectorAll('[data-input-field]');
-  inputFields.forEach(input => {
-    input.addEventListener('input', () => {
-      const keyEvent = new KeyboardEvent('keydown', {
-        key: 'e',
-        code: 'KeyE',
-        bubbles: true
-      });
-      document.dispatchEvent(keyEvent);
-      (input as HTMLInputElement).disabled = true;
-      setTimeout(() => {
-        (input as HTMLInputElement).disabled = false;
-        input.focus();
-      }, 2000);
-    });
-  });
-</script>
 
 <style>
   .input-group {
