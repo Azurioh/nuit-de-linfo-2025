@@ -1,0 +1,184 @@
+---
+import Layout from '../layouts/Layout.astro';
+import InputField from '../components/InputField.astro';
+import InputFieldTeleport from '../components/InputFieldTeleport.astro';
+import InputFieldLayout from '../components/InputFieldLayout.astro';
+import InputFieldNormal from '../components/InputFieldNormal.astro';
+---
+
+<Layout>
+	<main class="register-container">
+		<div class="register-card">
+			<h1>✨ Inscription ✨</h1>
+			<form class="register-form">
+				<InputFieldTeleport 
+					id="email"
+					label="Email"
+					type="email"
+					placeholder="exemple@email.com"
+					required
+				/>
+				
+				<InputFieldLayout 
+					id="username"
+					label="Nom d'utilisateur"
+					type="text"
+					placeholder="Votre nom d'utilisateur"
+					required
+				/>
+				
+				<InputFieldNormal 
+					id="password"
+					label="Mot de passe"
+					type="password"
+					placeholder="••••••••"
+					required
+				/>
+				
+				<InputField 
+					id="birthdate"
+					label="Date de naissance"
+					type="date"
+					required
+				/>
+				
+				<InputField 
+					id="phone"
+					label="Numéro de téléphone"
+					type="tel"
+					placeholder="+33 6 12 34 56 78"
+					required
+				/>
+				
+				<button type="submit" class="submit-btn">
+					<span>S'inscrire</span>
+					<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M4 10H16M16 10L12 6M16 10L12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</form>
+		</div>
+	</main>
+</Layout>
+
+<style>
+	.register-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+		padding: 20px;
+		font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+		background: rgb(13, 13, 13);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.register-container::before {
+		content: '';
+		position: absolute;
+		width: 200%;
+		height: 200%;
+		background: radial-gradient(circle, rgba(203,163,35,0.05) 1px, transparent 1px);
+		background-size: 50px 50px;
+		animation: moveBackground 20s linear infinite;
+	}
+
+	@keyframes moveBackground {
+		0% { transform: translate(0, 0); }
+		100% { transform: translate(50px, 50px); }
+	}
+
+	.register-card {
+		background: rgb(46, 46, 46);
+		backdrop-filter: blur(10px);
+		border-radius: 24px;
+		padding: 3rem 2.5rem;
+		box-shadow: 
+			0 20px 60px rgba(0, 0, 0, 0.5),
+			0 0 0 1px rgba(203, 163, 35, 0.1) inset;
+		width: 100%;
+		max-width: 450px;
+		position: relative;
+		z-index: 1;
+		animation: slideIn 0.5s ease-out;
+	}
+
+	@keyframes slideIn {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	h1 {
+		margin: 0 0 0.5rem;
+		font-size: 32px;
+		text-align: center;
+		color: rgb(203, 163, 35);
+		font-weight: 700;
+	}
+
+	.subtitle {
+		text-align: center;
+		color: #FFFFFF;
+		margin: 0 0 2.5rem;
+		font-size: 14px;
+	}
+
+	.register-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.submit-btn {
+		padding: 1rem;
+		background: rgb(203, 163, 35);
+		color: rgb(13, 13, 13);
+		border: none;
+		border-radius: 20px;
+		font-size: 1.1rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		margin-top: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		box-shadow: 0 4px 15px rgba(203, 163, 35, 0.3);
+	}
+
+	.submit-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(203, 163, 35, 0.5);
+		background: rgb(220, 180, 50);
+	}
+
+	.submit-btn:active {
+		transform: translateY(0);
+	}
+
+	.submit-btn svg {
+		transition: transform 0.3s ease;
+	}
+
+	.submit-btn:hover svg {
+		transform: translateX(4px);
+	}
+
+	@media (max-width: 500px) {
+		.register-card {
+			padding: 2rem 1.5rem;
+		}
+		
+		h1 {
+			font-size: 26px;
+		}
+	}
+</style>
