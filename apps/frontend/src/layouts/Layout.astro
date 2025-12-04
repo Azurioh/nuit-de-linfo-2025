@@ -3,13 +3,14 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
+		<meta name="color-scheme" content="light dark" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Astro Basics</title>
 	</head>
 	<body>
 		<div id="grey-filter" class="grey-filter">
-			<img id="filter-image" class="filter-image" src="/image/Image1.png" alt="Filter image" />
+			<img id="filter-image" class="filter-image" alt="Filter image" />
 		</div>
 		<audio id="filter-audio"></audio>
 		<slot />
@@ -33,64 +34,139 @@
 		background-color: rgba(0, 0, 0, 0.7);
 		pointer-events: none;
 		opacity: 0;
-		transition: opacity 0.3s ease;
 		z-index: 9999;
+		display: none;
+		contain: layout style paint;
+		transition: opacity 0.3s ease;
 	}
 
 	.grey-filter.active {
 		opacity: 1;
+		display: block;
 	}
 
 	.filter-image {
 		position: absolute;
 		bottom: 150px;
 		left: 50%;
-		transform: translateX(-50%);
+		transform: translateX(-50%) translateZ(0);
 		max-width: 300px;
 		max-height: 300px;
 		object-fit: contain;
+		will-change: opacity;
+		backface-visibility: hidden;
+		image-rendering: auto;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.grey-filter {
+			transition: none;
+		}
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.grey-filter {
+			background-color: rgba(0, 0, 0, 0.85);
+		}
 	}
 </style>
 
 <script>
 	const images = [
-		'/image/Image1.png',
-		'/image/Image2.png',
-		'/image/Image3.png',
-		'/image/Image4.png',
-		'/image/Image5.png',
-		'/image/Image6.png'
+		'/image/Image1.webp',
+		'/image/Image2.webp',
+		'/image/Image3.webp',
+		'/image/Image4.webp',
+		'/image/Image5.webp',
+		'/image/Image6.webp'
 	];
 
 	const songs = [
-		'/song/Song1.MP3',
-		'/song/Song2.MP3',
-		'/song/Song3.MP3',
-		'/song/Song4.MP3'
+		'/song/Song1.ogg',
+		'/song/Song2.ogg',
+		'/song/Song3.ogg',
+		'/song/Song4.ogg'
 	];
 
-	document.addEventListener('keydown', (event) => {
-		if (event.key === 'e' || event.key === 'E') {
-			const filter = document.getElementById('grey-filter');
-			const filterImage = document.getElementById('filter-image');
-			const audio = document.getElementById('filter-audio');
+	const MAX_USAGE_PER_SESSION = 50;
+	let usageCount = 0;
 
-			if (filter && filterImage && audio) {
-				const randomImageIndex = Math.floor(Math.random() * images.length);
-				filterImage.src = images[randomImageIndex];
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+	let isLowBattery = false;
+	if ('getBattery' in navigator) {
+		navigator.getBattery().then(battery => {
+			isLowBattery = battery.level < 0.2 && !battery.charging;
+			battery.addEventListener('levelchange', () => {
+				isLowBattery = battery.level < 0.2 && !battery.charging;
+			});
+			battery.addEventListener('chargingchange', () => {
+				isLowBattery = battery.level < 0.2 && !battery.charging;
+			});
+		});
+	}
+
+	function activateFilter() {
+		if (usageCount >= MAX_USAGE_PER_SESSION) {
+			console.log('RSE: Limite d\'utilisation atteinte pour cette session');
+			return;
+		}
+
+		const shouldDegrade = isLowBattery || prefersReducedMotion;
+
+		const filter = document.getElementById('grey-filter');
+		const filterImage = document.getElementById('filter-image');
+		const audio = document.getElementById('filter-audio');
+
+		if (filter && filterImage && audio) {
+			usageCount++;
+
+			const randomImageIndex = Math.floor(Math.random() * images.length);
+			filterImage.src = images[randomImageIndex];
+
+			if (!shouldDegrade) {
 				const randomSongIndex = Math.floor(Math.random() * songs.length);
 				audio.src = songs[randomSongIndex];
-				audio.play();
-
-				filter.classList.add('active');
-
-				setTimeout(() => {
-					filter.classList.remove('active');
-					audio.pause();
-					audio.currentTime = 0;
-				}, 2000);
+				audio.volume = 0.5;
+				audio.play().catch(err => {
+					console.warn('Audio playback failed:', err);
+				});
 			}
+
+			requestAnimationFrame(() => {
+				filter.classList.add('active');
+			});
+
+			const displayDuration = shouldDegrade ? 1000 : 2000;
+
+			setTimeout(() => {
+				requestAnimationFrame(() => {
+					filter.classList.remove('active');
+				});
+
+				audio.pause();
+				audio.currentTime = 0;
+
+				requestAnimationFrame(() => {
+					audio.src = '';
+					filterImage.src = '';
+				});
+			}, displayDuration);
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', () => {
+		const inputFields = document.querySelectorAll('[data-input-field]');
+		inputFields.forEach(input => {
+			input.addEventListener('input', () => {
+				activateFilter();
+			});
+		});
+	});
+
+	window.addEventListener('beforeunload', () => {
+		if (usageCount > 0) {
+			console.log(`RSE: ${usageCount} utilisations cette session`);
 		}
 	});
 </script>
