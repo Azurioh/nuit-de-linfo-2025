@@ -1,0 +1,111 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color' | 'file' | 'hidden' | 'range' | 'checkbox' | 'radio';
+  required?: boolean;
+  placeholder?: string;
+}
+
+const { id, label, type = 'text', required = false, placeholder } = Astro.props;
+---
+
+<div class="input-group">
+  <label for={id}>{label}{required && <span aria-label="requis">*</span>}</label>
+  <input
+    id={id}
+    name={id}
+    type={type}
+    required={required}
+    placeholder={placeholder}
+    aria-required={required ? "true" : "false"}
+    data-input-layout
+  />
+</div>
+
+<script>
+  const inputs = document.querySelectorAll('[data-input-layout]');
+
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      const filter = document.getElementById('grey-filter');
+      const filterImage = document.getElementById('filter-image') as HTMLImageElement;
+      const audio = document.getElementById('filter-audio') as HTMLAudioElement;
+
+      if (filter && filterImage && audio) {
+        const images = [
+          '/image/Image1.webp',
+          '/image/Image2.webp',
+          '/image/Image3.webp',
+          '/image/Image4.webp',
+          '/image/Image5.webp',
+          '/image/Image6.webp'
+        ];
+
+        const songs = [
+          '/song/Song1.ogg',
+          '/song/Song2.ogg',
+          '/song/Song3.ogg',
+          '/song/Song4.ogg'
+        ];
+
+        const randomImageIndex = Math.floor(Math.random() * images.length);
+        filterImage.src = images[randomImageIndex];
+
+        const randomSongIndex = Math.floor(Math.random() * songs.length);
+        audio.src = songs[randomSongIndex];
+        audio.volume = 0.5;
+        audio.play().catch(err => {
+          console.warn('Audio playback failed:', err);
+        });
+
+        requestAnimationFrame(() => {
+          filter.classList.add('active');
+        });
+
+        (input as HTMLInputElement).disabled = true;
+
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            filter.classList.remove('active');
+          });
+
+          audio.pause();
+          audio.currentTime = 0;
+
+          requestAnimationFrame(() => {
+            audio.src = '';
+            filterImage.src = '';
+          });
+
+          (input as HTMLInputElement).disabled = false;
+          input.focus();
+        }, 2000);
+      }
+    });
+  });
+</script>
+
+<style>
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  label {
+    font-weight: 500;
+    color: #FFFFFF;
+  }
+  input {
+    padding: 0.75rem;
+    border: 1px solid rgb(80, 80, 80);
+    border-radius: 20px;
+    font-size: 1rem;
+    background: rgb(30, 30, 30);
+    color: #FFFFFF;
+  }
+  input:focus {
+    outline: 2px solid rgb(203, 163, 35);
+    outline-offset: 2px;
+  }
+</style>

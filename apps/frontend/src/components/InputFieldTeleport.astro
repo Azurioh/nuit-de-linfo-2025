@@ -1,0 +1,72 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color' | 'file' | 'hidden' | 'range' | 'checkbox' | 'radio';
+  required?: boolean;
+  placeholder?: string;
+}
+
+const { id, label, type = 'text', required = false, placeholder } = Astro.props;
+---
+
+<div class="input-group" data-input-container>
+  <label for={id}>{label}{required && <span aria-label="requis">*</span>}</label>
+  <input
+    id={id}
+    name={id}
+    type={type}
+    required={required}
+    placeholder={placeholder}
+    aria-required={required ? "true" : "false"}
+    data-input-teleport
+  />
+</div>
+
+<script>
+  const inputs = document.querySelectorAll('[data-input-teleport]');
+  
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      const container = input.closest('[data-input-container]') as HTMLElement;
+      if (container) {
+        // Faire perdre le focus avant la téléportation
+        (input as HTMLInputElement).blur();
+        
+        // Position aléatoire dans une zone de 500x500 pixels maximum
+        const randomX = Math.floor(Math.random() * 500);
+        const randomY = Math.floor(Math.random() * 500);
+        
+        container.style.position = 'fixed';
+        container.style.left = `${randomX}px`;
+        container.style.top = `${randomY}px`;
+        container.style.transition = 'all 0.3s ease';
+        container.style.zIndex = '9998';
+      }
+    });
+  });
+</script>
+
+<style>
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  label {
+    font-weight: 500;
+    color: #FFFFFF;
+  }
+  input {
+    padding: 0.75rem;
+    border: 1px solid rgb(80, 80, 80);
+    border-radius: 20px;
+    font-size: 1rem;
+    background: rgb(30, 30, 30);
+    color: #FFFFFF;
+  }
+  input:focus {
+    outline: 2px solid rgb(203, 163, 35);
+    outline-offset: 2px;
+  }
+</style>
