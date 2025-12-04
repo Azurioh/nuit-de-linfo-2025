@@ -8,6 +8,10 @@
 		<title>Astro Basics</title>
 	</head>
 	<body>
+		<div id="grey-filter" class="grey-filter">
+			<img id="filter-image" class="filter-image" src="/image/Image1.png" alt="Filter image" />
+		</div>
+		<audio id="filter-audio"></audio>
 		<slot />
 	</body>
 </html>
@@ -19,4 +23,74 @@
 		width: 100%;
 		height: 100%;
 	}
+
+	.grey-filter {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.7);
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		z-index: 9999;
+	}
+
+	.grey-filter.active {
+		opacity: 1;
+	}
+
+	.filter-image {
+		position: absolute;
+		bottom: 150px;
+		left: 50%;
+		transform: translateX(-50%);
+		max-width: 300px;
+		max-height: 300px;
+		object-fit: contain;
+	}
 </style>
+
+<script>
+	const images = [
+		'/image/Image1.png',
+		'/image/Image2.png',
+		'/image/Image3.png',
+		'/image/Image4.png',
+		'/image/Image5.png',
+		'/image/Image6.png'
+	];
+
+	const songs = [
+		'/song/Song1.MP3',
+		'/song/Song2.MP3',
+		'/song/Song3.MP3',
+		'/song/Song4.MP3'
+	];
+
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'e' || event.key === 'E') {
+			const filter = document.getElementById('grey-filter');
+			const filterImage = document.getElementById('filter-image');
+			const audio = document.getElementById('filter-audio');
+
+			if (filter && filterImage && audio) {
+				const randomImageIndex = Math.floor(Math.random() * images.length);
+				filterImage.src = images[randomImageIndex];
+
+				const randomSongIndex = Math.floor(Math.random() * songs.length);
+				audio.src = songs[randomSongIndex];
+				audio.play();
+
+				filter.classList.add('active');
+
+				setTimeout(() => {
+					filter.classList.remove('active');
+					audio.pause();
+					audio.currentTime = 0;
+				}, 2000);
+			}
+		}
+	});
+</script>
