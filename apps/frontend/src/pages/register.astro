@@ -6,7 +6,10 @@ import InputFieldLayout from '../components/InputFieldLayout.astro';
 import InputFieldPassword from '../components/InputFieldPassword.astro';
 import InputFieldChess from '../components/InputFieldChess.astro';
 import InputFieldNormal from '../components/InputFieldNormal.astro';
+import InputFieldPostalSlider from '../components/InputFieldPostalSlider.astro';
 import InputFieldRoulette from '../components/InputFieldRoulette.astro';
+import InputFieldCityRandom from '../components/InputFieldCityRandom.astro';
+import InputFieldCountryInvert from '../components/InputFieldCountryInvert.astro';
 import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 ---
 
@@ -16,7 +19,7 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 	</div>
 	<main class="register-container">
 		<div class="register-card">
-			<h1>✨ Inscription ✨</h1>
+			<h1>Inscription</h1>
 			<form class="register-form">
 				<InputFieldTeleport
 					id="email"
@@ -40,6 +43,39 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 					placeholder="••••••••"
 					required
 				/>
+
+				<div class="address-row">
+					<InputFieldNormal
+						id="street"
+						label="Rue"
+						type="text"
+						placeholder="123 rue de la Paix"
+						required
+					/>
+				</div>
+
+				   <div class="address-row">
+					   <InputFieldPostalSlider
+						   id="postal-code"
+						   label="Code Postal"
+						   required
+					   />
+					   <InputFieldCityRandom
+						   id="city"
+						   label="Ville"
+						   placeholder="Paris"
+						   required
+					   />
+				   </div>
+
+				<div class="address-row">
+					   <InputFieldCountryInvert
+						   id="country"
+						   label="Pays"
+						   placeholder="France"
+						   required
+					   />
+				</div>
 
 				<InputFieldRoulette
 					id="birthdate"
@@ -157,6 +193,16 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
+	}
+
+	.address-row {
+		display: flex;
+		gap: 1rem;
+		width: 100%;
+	}
+
+	.address-row > :global(*) {
+		flex: 1;
 	}
 
 	.submit-btn {

@@ -1,0 +1,59 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+}
+const { id, label, required = false, placeholder } = Astro.props;
+---
+<div class="input-group" data-input-container>
+  <label for={id}>{label}</label>
+  <input
+    id={id}
+    name={id}
+    type="text"
+    required={required}
+    placeholder={placeholder}
+    class="country-invert"
+    autocomplete="off"
+  />
+</div>
+
+<style>
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+label {
+  font-weight: 500;
+  color: #fff;
+}
+.country-invert {
+  padding: 0.75rem;
+  border: 1px solid rgb(80, 80, 80);
+  border-radius: 20px;
+  font-size: 1rem;
+  background: rgb(30, 30, 30);
+  color: #fff;
+  transition: transform 0.3s;
+}
+.country-invert.inverted {
+  transform: scaleX(-1);
+  direction: rtl;
+  text-align: right;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.querySelector('.country-invert');
+  if (!input) return;
+  let inverted = false;
+  input.addEventListener('input', () => {
+    inverted = !inverted;
+    input.classList.toggle('inverted', inverted);
+  });
+});
+</script>

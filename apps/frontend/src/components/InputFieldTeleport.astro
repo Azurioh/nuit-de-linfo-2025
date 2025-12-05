@@ -11,7 +11,7 @@ const { id, label, type = 'text', required = false, placeholder } = Astro.props;
 ---
 
 <div class="input-group" data-input-container>
-  <label for={id}>{label}{required && <span aria-label="requis">*</span>}</label>
+  <label for={id}>{label}</label>
   <input
     id={id}
     name={id}
