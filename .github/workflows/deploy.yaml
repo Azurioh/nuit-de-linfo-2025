@@ -4,7 +4,7 @@ on:
   - push
 
 env:
-  SCW_REGION: fr-par
+  SCW_DEFAULT_REGION: fr-par
   IMAGE_NAME: nuit-de-linfo-2025
 
 jobs:
@@ -37,7 +37,7 @@ jobs:
           secret-key: ${{ secrets.SCW_SECRET_KEY }}
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
           default-project-id: ${{ secrets.SCW_PROJECT_ID }}
-          default-region: ${{ env.SCW_REGION }}
+          default-region: ${{ env.SCW_DEFAULT_REGION }}
 
       - name: Deploy to Serverless Containers
         run: |
@@ -54,6 +54,11 @@ jobs:
             env.APP_ENV=${{ secrets.APP_ENV }} \
             env.MODEL_NAME=${{ secrets.MODEL_NAME }} \
             env.SERVER_ADDRESS=0.0.0.0:8080
+        env:
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
+          SCW_DEFAULT_REGION: ${{ env.SCW_DEFAULT_REGION }}
 
   deploy-frontend:
     name: 🎨 Deploy Static Frontend
