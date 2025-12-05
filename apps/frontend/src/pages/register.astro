@@ -26,7 +26,6 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 					label="Email"
 					type="email"
 					placeholder="exemple@email.com"
-					required
 				/>
 
 				<InputFieldLayout
@@ -34,14 +33,12 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 					label="Nom d'utilisateur"
 					type="text"
 					placeholder="Votre nom d'utilisateur"
-					required
 				/>
 
 				<InputFieldPassword
 					id="password"
 					label="Mot de passe"
 					placeholder="••••••••"
-					required
 				/>
 
 				<div class="address-row">
@@ -80,14 +77,12 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 				<InputFieldRoulette
 					id="birthdate"
 					label="Date de naissance"
-					required
 				/>
 
 				<InputFieldRotaryPhone
 					id="phone"
 					label="Numéro de téléphone"
 					placeholder="+33 _ __ __ __ __"
-					required
 				/>
 
 				<button type="submit" class="submit-btn">
@@ -99,6 +94,15 @@ import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 			</form>
 		</div>
 	</main>
+	<script>
+		const form = document.querySelector('.register-form');
+		if (form) {
+			form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				window.location.href = '/fun';
+			});
+		}
+	</script>
 </Layout>
 
 <style>
