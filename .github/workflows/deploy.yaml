@@ -41,8 +41,8 @@ jobs:
 
       - name: Deploy to Serverless Containers
         run: |
-          scw container container deploy ${{ secrets.SCW_CONTAINER_ID }} \
-            namespace-id=${{ secrets.SCW_CONTAINER_NAMESPACE_ID }} \
+          scw container container deploy \
+            container-id=${{ secrets.SCW_CONTAINER_ID }} \
             name=${{ env.IMAGE_NAME }} \
             registry-image=${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest \
             min-scale=0 \
