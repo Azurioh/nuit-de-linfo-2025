@@ -37,4 +37,20 @@ impl OllamaClient {
 
         Ok(res.bytes_stream())
     }
+
+    pub async fn generate_chat_completion(&self, messages: Vec<Message>) -> Result<crate::domain::models::OllamaResponse, reqwest::Error> {
+        let request_body = OllamaChatRequest {
+            model: self.model.as_ref().clone(),
+            messages,
+            stream: false,
+        };
+
+        let res = self.client
+            .post(self.base_url.as_ref())
+            .json(&request_body)
+            .send()
+            .await?;
+
+        res.json::<crate::domain::models::OllamaResponse>().await
+    }
 }
