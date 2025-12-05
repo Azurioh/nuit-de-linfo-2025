@@ -3,7 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import InputField from '../components/InputField.astro';
 import InputFieldTeleport from '../components/InputFieldTeleport.astro';
 import InputFieldLayout from '../components/InputFieldLayout.astro';
-import InputFieldNormal from '../components/InputFieldNormal.astro';
+import InputFieldPassword from '../components/InputFieldPassword.astro';
+import InputFieldChess from '../components/InputFieldChess.astro';
 ---
 
 <Layout>
@@ -27,10 +28,9 @@ import InputFieldNormal from '../components/InputFieldNormal.astro';
 					required
 				/>
 				
-				<InputFieldNormal 
+				<InputFieldPassword 
 					id="password"
 					label="Mot de passe"
-					type="password"
 					placeholder="••••••••"
 					required
 				/>
