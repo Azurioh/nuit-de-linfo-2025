@@ -1,0 +1,91 @@
+name: Deploy Green IT Stack to Scaleway
+
+on:
+  - push
+
+env:
+  SCW_REGION: fr-par
+  IMAGE_NAME: nuit-de-linfo-2025
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Scaleway Registry
+        uses: docker/login-action@v3
+        with:
+          registry: rg.fr-par.scw.cloud
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=registry,ref=${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest
+          cache-to: type=inline
+
+      - name: Install Scaleway CLI
+        uses: scaleway/action-scw@v0
+        with:
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          default-project-id: ${{ secrets.SCW_PROJECT_ID }}
+          default-region: ${{ env.SCW_REGION }}
+
+      - name: Deploy to Serverless Containers
+        run: |
+          scw container container deploy \
+            namespace-id=${{ secrets.SCW_CONTAINER_NAMESPACE_ID }} \
+            name=${{ env.IMAGE_NAME }} \
+            registry-image=${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest \
+            min-scale=0 \
+            max-scale=5 \
+            memory-limit=512 \
+            cpu-limit=500 \
+            port=8080 \
+            env.MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }} \
+            env.APP_ENV=${{ secrets.APP_ENV }} \
+            env.MODEL_NAME=${{ secrets.MODEL_NAME }} \
+            env.SERVER_ADDRESS=0.0.0.0:8080
+
+  deploy-frontend:
+    name: 🎨 Deploy Static Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+
+      - name: Build Frontend
+        working-directory: ./apps/frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Upload to Scaleway Bucket
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.SCW_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          AWS_REGION: 'fr-par'
+          AWS_S3_ENDPOINT: https://s3.fr-par.scw.cloud
+          SOURCE_DIR: './frontend/dist'
