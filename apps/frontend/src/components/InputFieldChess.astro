@@ -1,0 +1,235 @@
+---
+interface Props {
+  name: string;
+  placeholder?: string;
+  type?: string;
+  label?: string;
+}
+
+const { name, placeholder = '', type = 'text', label } = Astro.props;
+---
+
+<div class="input-container" data-chess-container>
+  {label && <label for={name} class="input-label">{label}</label>}
+  <input
+    type={type}
+    name={name}
+    id={name}
+    placeholder={placeholder}
+    class="input-field"
+    data-chess-input
+    autocomplete="off"
+  />
+  <div class="chess-board" data-chess-board style="display: none;">
+    <div class="chess-grid">
+      <!-- 8ème rangée -->
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light">♚</div>
+      <div class="square dark"></div>
+      
+      <!-- 7ème rangée -->
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      
+      <!-- 6ème rangée -->
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      
+      <!-- 5ème rangée -->
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      
+      <!-- 4ème rangée -->
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      
+      <!-- 3ème rangée -->
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      
+      <!-- 2ème rangée -->
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark">♟</div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      
+      <!-- 1ère rangée -->
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light"></div>
+      <div class="square dark"></div>
+      <div class="square light">♕</div>
+      <div class="square dark"></div>
+      <div class="square light">♔</div>
+    </div>
+    <p class="chess-hint">Échec et mat en 1 coup - Format: pièce + case (ex: Qg7, Rf3)</p>
+  </div>
+  <p class="hint-text" data-chess-hint>Cliquez sur le champ pour voir le problème d'échecs</p>
+</div>
+
+<style>
+  .input-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: rgb(203, 163, 35);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgb(13, 13, 13);
+    border: 2px solid rgb(46, 46, 46);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: rgb(203, 163, 35);
+    box-shadow: 0 0 0 3px rgba(203, 163, 35, 0.1);
+  }
+
+  .chess-board {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgb(46, 46, 46);
+    border-radius: 8px;
+    animation: slideDown 0.3s ease;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .chess-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 40px);
+    grid-template-rows: repeat(8, 40px);
+    gap: 0;
+    margin: 0 auto;
+    width: fit-content;
+    border: 2px solid rgb(203, 163, 35);
+  }
+
+  .square {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  .square.light {
+    background: #f0d9b5;
+  }
+
+  .square.dark {
+    background: #b58863;
+  }
+
+  .chess-hint {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: rgb(203, 163, 35);
+    text-align: center;
+  }
+
+  .hint-text {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: rgb(203, 163, 35);
+    min-height: 1.2rem;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('[data-chess-container]') as HTMLElement;
+    const input = container?.querySelector('[data-chess-input]') as HTMLInputElement;
+    const board = container?.querySelector('[data-chess-board]') as HTMLElement;
+    const hint = container?.querySelector('[data-chess-hint]') as HTMLElement;
+
+    if (!input || !board || !hint) return;
+
+    // Solution: Qg7# (La Dame en f6 fait échec et mat en g7)
+    const solution = ['Qg7', 'qg7', 'Qg7#', 'qg7#', 'Dg7', 'dg7', 'Dg7#', 'dg7#'];
+
+    input.addEventListener('focus', () => {
+      board.style.display = 'block';
+      hint.textContent = 'Trouvez le coup gagnant !';
+    });
+
+    input.addEventListener('input', () => {
+      const value = input.value.trim();
+      
+      if (solution.includes(value)) {
+        hint.textContent = '✅ Échec et mat ! Coup correct !';
+        hint.style.color = '#00ff00';
+        board.style.display = 'none';
+      } else if (value.length > 0) {
+        hint.textContent = '❌ Ce n\'est pas le bon coup...';
+        hint.style.color = '#ff4444';
+      } else {
+        hint.textContent = 'Trouvez le coup gagnant !';
+        hint.style.color = 'rgb(203, 163, 35)';
+      }
+    });
+  });
+</script>
