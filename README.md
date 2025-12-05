@@ -8,10 +8,27 @@ Bienvenue sur le dépôt de notre participation à la Nuit de l'Info 2025. Ce pr
 Nous avons intégré un assistant virtuel intelligent (style "Clippy") capable de répondre aux questions sur le sujet.
 *   [**Documentation Technique Chatbot**](./docs/backend/chatbot.md)
 
+👉 **Accès** : Rendez-vous sur la page **[`/chatbot`](https://nuit-de-linfo-2025-website.s3-website.fr-par.scw.cloud/chatbot)** de l'application.
+
 ### 🌱 Défi RSE (Responsabilité Sociétale des Entreprises)
 Nous avons mis un point d'honneur à respecter les normes d'éco-conception et d'accessibilité (tout en jouant avec les limites pour certains défis "Hostile Design").
 *   [**Rapport RSE - Frontend**](./docs/rse/rse-frontend.md)
 *   [**Rapport RSE - Backend**](./docs/rse/rse-backend.md)
+
+### 🎢 Défi `ft_rube_goldberg`
+Pour répondre à ce défi, nous avons imaginé un **CAPTCHA Rube Goldberg**.
+C'est une machine infernale numérique : pour valider une simple inscription, l'utilisateur doit réussir une succession d'épreuves absurdes et inutilement complexes (Casse-brique, Puzzle Taquin, Memory, tests de réflexes...).
+
+👉 **Accès** : Rendez-vous sur la page **[`/fun`](https://nuit-de-linfo-2025-website.s3-website.fr-par.scw.cloud/fun)** de l'application.
+
+### 👩‍💻 Défi ACDI : "Les femmes dans le numérique"
+Ce défi vise à mettre en lumière la contribution essentielle des femmes dans l'histoire de l'informatique et à promouvoir la mixité.
+Nous avons réalisé une page dédiée intégrant :
+*   🎙️ **Un Podcast** original de 5 minutes (réalisé par l'équipe).
+*   📚 Une présentation pédagogique sur des figures emblématiques (Ada Lovelace...).
+*   🎨 Une mise en page soignée respectant la charte graphique.
+
+👉 **Accès** : Rendez-vous sur la page **[`/acdi`](https://nuit-de-linfo-2025-website.s3-website.fr-par.scw.cloud/acdi)** de l'application.
 
 ---
 

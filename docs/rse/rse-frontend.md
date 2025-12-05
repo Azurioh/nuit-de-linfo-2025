@@ -4,7 +4,7 @@ Cette documentation détaille les choix techniques et les pratiques mises en pla
 
 > [!NOTE]
 > **Contexte des Défis**
-> Certains éléments de l'interface (notamment les champs de saisie "ludiques" et le chatbot) ont été conçus spécifiquement pour répondre à des défis "Hostile Design" et "IA". Ils dérogent volontairement aux règles d'accessibilité et de sobriété présentées ci-dessous.
+> Certains éléments de l'interface (notamment les champs de saisie "ludiques" de la page `/register` le chatbot dans la page `/chatbot` ou les jeux funs dans la page `/fun`) ont été conçus spécifiquement pour répondre à des défis "Hostile Design" et "IA". Ils dérogent volontairement aux règles d'accessibilité et de sobriété présentées ci-dessous.
 
 ## 1. Architecture Éco-conçue avec Astro
 
