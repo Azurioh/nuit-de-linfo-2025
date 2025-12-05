@@ -224,7 +224,9 @@ pub async fn chat_handler(
         .streaming(final_stream))
 }
 
-#[get("/api/hello")]
+#[get("/hello")]
 pub async fn hello() -> impl Responder {
-    HttpResponse::Ok().json(serde_json::json!({"message": "Hello, world!"}))
+    HttpResponse::Ok()
+        .append_header(("Cache-Control", "public, max-age=3600"))
+        .json(serde_json::json!({"message": "Hello, world!"}))
 }

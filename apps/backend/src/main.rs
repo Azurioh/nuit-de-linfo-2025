@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::domain::models::{Message, ConversationSession, AppStateInternal};
 use infrastructure::ollama_client::OllamaClient;
 use std::time::{Duration, Instant};
-use actix_web::{rt, web, App, HttpServer};
+use actix_web::{rt, web, App, HttpServer, middleware::Compress};
 use config::Config;
 use api::chat_route::{chat_handler, hello};
 
@@ -73,7 +73,11 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(ollama_client.clone()))
             .app_data(web::Data::new(app_state.clone()))
             .service(chat_handler)
-            .service(hello)
+            .service(
+                web::scope("/api")
+                    .wrap(Compress::default())
+                    .service(hello)
+            )
     })
     .bind(Config::init().server_address)?
     .run()
