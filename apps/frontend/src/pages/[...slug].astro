@@ -1,11 +1,23 @@
 ---
+import Chatbot from "../components/Chatbot.astro";
 import Footer from "../components/Footer.astro";
 import Navbar from "../components/Navbar.astro";
 import Layout from "../layouts/Layout.astro";
 import "../styles/index.css";
+
+export function getStaticPaths() {
+  return [
+    { params: { slug: undefined } }, // Corresponds to /
+    { params: { slug: 'chatbot' } }, // Corresponds to /chatbot
+  ];
+}
+
+const { slug } = Astro.params;
+const showChatbot = slug === 'chatbot';
 ---
 
 <Layout>
+	{showChatbot && <Chatbot />}
 	<Navbar />
 	<div class="slogan">
 		<p>

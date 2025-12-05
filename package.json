@@ -1,3 +1,12 @@
 {
-	"name": "nuit-info"
+	"name": "nuit-info",
+	"scripts": {
+		"dev:front": "cd apps/frontend && pnpm dev",
+		"dev:back": "cd apps/backend && cargo watch -x run",
+		"dev": "concurrently -n \"FRONT,BACK\" -c \"cyan,magenta\" \"npm run dev:front\" \"npm run dev:back\"",
+		"build": "cd frontend && pnpm build && cd ../backend && cargo build --release"
+	},
+	"devDependencies": {
+		"concurrently": "^9.2.1"
+	}
 }
