@@ -1,0 +1,35 @@
+.container {
+    width: 100%;
+    height: 70px;
+    background-color: rgb(13, 13, 13);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    border-bottom: 1px solid rgb(46, 46, 46);
+}
+
+.left-section a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+
+.right-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.right-section .register {
+    text-decoration: none;
+    color: black;
+    background-color: rgb(203, 163, 35);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.right-section .register:hover {
+    color: white;
+}
