@@ -28,6 +28,8 @@ jobs:
 
       - name: Build Frontend
         working-directory: ./apps/frontend
+        env:
+          PUBLIC_CHATBOT_API_URL: https://nuitdelinfo2025jb7kukab-container-angry-sinoussi.functions.fnc.fr-par.scw.cloud/chat
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
