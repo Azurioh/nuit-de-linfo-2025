@@ -1,0 +1,395 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+}
+
+const { id, label, required = false, placeholder } = Astro.props;
+---
+
+<div class="rotary-phone-group">
+  <label>{label}{required && <span aria-label="requis">*</span>}</label>
+
+  <div class="phone-display">
+    <div class="display-screen" data-phone-display>
+      {placeholder || '+33 _ __ __ __ __'}
+    </div>
+    <button type="button" class="clear-btn" data-clear-btn>🗑️</button>
+  </div>
+
+  <div class="rotary-dial">
+    <svg class="rotary-background" viewBox="0 0 300 300">
+      <circle cx="150" cy="150" r="140" fill="rgb(30, 30, 30)" stroke="rgb(203, 163, 35)" stroke-width="4"/>
+      <circle cx="150" cy="150" r="110" fill="rgb(13, 13, 13)" stroke="rgb(80, 80, 80)" stroke-width="2"/>
+      <circle cx="150" cy="150" r="40" fill="rgb(30, 30, 30)" stroke="rgb(203, 163, 35)" stroke-width="2"/>
+
+      <!-- Butoir métallique fixe à droite (0°) -->
+      <rect x="270" y="145" width="8" height="30" rx="2" fill="rgb(203, 163, 35)" stroke="rgb(150, 120, 25)" stroke-width="1"/>
+      <circle cx="274" cy="160" r="3" fill="rgb(150, 120, 25)"/>
+    </svg>
+
+    <div class="dial-numbers" data-dial-container>
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num, index) => {
+        const angle = (index * 36) - 90;
+        const x = 150 + 80 * Math.cos(angle * Math.PI / 180);
+        const y = 150 + 80 * Math.sin(angle * Math.PI / 180);
+        return (
+          <div
+            class="dial-number"
+            data-number={num}
+            style={`left: ${x}px; top: ${y}px;`}
+          >
+            <div class="number-circle">
+              <span>{num}</span>
+              <div class="finger-stop"></div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  <input type="hidden" id={id} name={id} data-rotary-input />
+</div>
+
+<script>
+  const display = document.querySelector('[data-phone-display]') as HTMLElement;
+  const clearBtn = document.querySelector('[data-clear-btn]');
+  const hiddenInput = document.querySelector('[data-rotary-input]') as HTMLInputElement;
+  const dialContainer = document.querySelector('[data-dial-container]') as HTMLElement;
+  const numberButtons = document.querySelectorAll('[data-number]');
+
+  let phoneNumber = '';
+  let isDialing = false;
+  let isDragging = false;
+  let startAngle = 0;
+  let currentRotation = 0;
+  let draggedNumber: string | null = null;
+  let lastAngle = 0;
+  let totalRotation = 0;
+
+  function updateDisplay() {
+    if (phoneNumber.length === 0) {
+      display.textContent = '+33 _ __ __ __ __';
+    } else {
+      const formatted = phoneNumber.match(/.{1,2}/g)?.join(' ') || phoneNumber;
+      display.textContent = `+33 ${formatted}`;
+    }
+    if (hiddenInput) {
+      hiddenInput.value = `+33${phoneNumber}`;
+    }
+  }
+
+  function dialNumber(num: string) {
+    if (phoneNumber.length < 9) {
+      phoneNumber += num;
+      updateDisplay();
+
+      const beep = new Audio();
+      beep.src = 'data:audio/wav;base64,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';
+      beep.play().catch(() => {});
+    }
+  }
+
+  function getAngle(clientX: number, clientY: number): number {
+    const rect = dialContainer.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = clientX - centerX;
+    const deltaY = clientY - centerY;
+    return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+  }
+
+  numberButtons.forEach(button => {
+    const handleStart = (clientX: number, clientY: number) => {
+      if (isDialing) return;
+      isDragging = true;
+      startAngle = getAngle(clientX, clientY);
+      lastAngle = startAngle;
+      totalRotation = 0;
+      draggedNumber = (button as HTMLElement).dataset.number || null;
+      dialContainer.style.cursor = 'grabbing';
+    };
+
+    button.addEventListener('mousedown', (e: MouseEvent) => {
+      handleStart(e.clientX, e.clientY);
+    });
+
+    button.addEventListener('touchstart', (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        handleStart(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+  });
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (!isDragging || isDialing) return;
+
+    const currentAngle = getAngle(clientX, clientY);
+    let deltaAngle = currentAngle - lastAngle;
+
+    if (deltaAngle > 180) deltaAngle -= 360;
+    if (deltaAngle < -180) deltaAngle += 360;
+
+    totalRotation += deltaAngle;
+    lastAngle = currentAngle;
+
+    const initialAngle = getInitialAngleForNumber(draggedNumber);
+    const maxRotation = getMaxRotationForNumber(draggedNumber);
+    const maxAllowedRotation = maxRotation - initialAngle;
+
+    currentRotation = Math.max(0, Math.min(totalRotation, maxAllowedRotation));
+    dialContainer.style.transform = `rotate(${currentRotation}deg)`;
+
+    if (currentRotation >= maxAllowedRotation - 2) {
+      currentRotation = maxAllowedRotation;
+      dialContainer.style.transform = `rotate(${maxAllowedRotation}deg)`;
+    }
+  };
+
+  function getMaxRotationForNumber(num: string | null): number {
+    if (!num) return 0;
+
+    const positions: { [key: string]: number } = {
+      '1': -90,
+      '2': -54,
+      '3': -18,
+      '4': 18,
+      '5': 54,
+      '6': 90,
+      '7': 126,
+      '8': 162,
+      '9': 198,
+      '0': 234
+    };
+
+    const startAngle = positions[num];
+    const targetAngle = 0;
+
+    let rotation = targetAngle - startAngle;
+
+    if (rotation < 0) {
+      rotation = 360 + rotation;
+    }
+
+    return rotation;
+  }
+
+  function getInitialAngleForNumber(num: string | null): number {
+    return 0;
+  }
+
+  document.addEventListener('mousemove', (e: MouseEvent) => {
+    handleMove(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('touchmove', (e: TouchEvent) => {
+    if (e.touches.length > 0) {
+      handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  const handleEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    dialContainer.style.cursor = 'grab';
+
+    const initialAngle = getInitialAngleForNumber(draggedNumber);
+    const maxRotation = getMaxRotationForNumber(draggedNumber);
+    const maxAllowedRotation = maxRotation - initialAngle;
+    const threshold = maxAllowedRotation * 0.8;
+
+    if (currentRotation >= threshold && draggedNumber !== null) {
+      isDialing = true;
+
+      dialContainer.style.transition = 'transform 0.3s ease';
+      dialContainer.style.transform = `rotate(${maxAllowedRotation}deg)`;
+
+      setTimeout(() => {
+        dialNumber(draggedNumber);
+
+        const returnDuration = maxAllowedRotation * 3;
+        dialContainer.style.transition = `transform ${returnDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`;
+        dialContainer.style.transform = 'rotate(0deg)';
+
+        setTimeout(() => {
+          dialContainer.style.transition = '';
+          isDialing = false;
+          currentRotation = 0;
+          totalRotation = 0;
+        }, returnDuration);
+      }, 300);
+    } else {
+      dialContainer.style.transition = 'transform 0.3s ease';
+      dialContainer.style.transform = 'rotate(0deg)';
+      setTimeout(() => {
+        dialContainer.style.transition = '';
+        currentRotation = 0;
+        totalRotation = 0;
+      }, 300);
+    }
+  };
+
+  document.addEventListener('mouseup', handleEnd);
+  document.addEventListener('touchend', handleEnd);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      phoneNumber = '';
+      updateDisplay();
+    });
+  }
+
+  updateDisplay();
+</script>
+
+<style>
+  .rotary-phone-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  label {
+    font-weight: 500;
+    color: #FFFFFF;
+    font-size: 1rem;
+  }
+
+  .phone-display {
+    background: rgb(13, 13, 13);
+    border: 2px solid rgb(203, 163, 35);
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    box-shadow:
+      0 4px 15px rgba(203, 163, 35, 0.2),
+      inset 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .display-screen {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(203, 163, 35);
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px rgba(203, 163, 35, 0.5);
+    letter-spacing: 2px;
+    flex: 1;
+  }
+
+  .clear-btn {
+    background: rgb(80, 80, 80);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clear-btn:hover {
+    background: rgb(203, 163, 35);
+    transform: scale(1.1);
+  }
+
+  .rotary-dial {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 1rem auto;
+    user-select: none;
+  }
+
+  .rotary-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+  }
+
+  .dial-numbers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+
+  .dial-number {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .dial-number:active {
+    cursor: grabbing;
+  }
+
+  .number-circle {
+    width: 45px;
+    height: 45px;
+    background: rgb(80, 80, 80);
+    border: 3px solid rgb(203, 163, 35);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    transition: all 0.2s ease;
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.5),
+      inset 0 2px 5px rgba(255, 255, 255, 0.1);
+    position: relative;
+  }
+
+  .number-circle:hover {
+    transform: scale(1.1);
+    background: rgb(100, 100, 100);
+    box-shadow:
+      0 6px 15px rgba(203, 163, 35, 0.5),
+      inset 0 2px 5px rgba(255, 255, 255, 0.1);
+  }
+
+  .finger-stop {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 12px;
+    background: rgb(203, 163, 35);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 500px) {
+    .rotary-dial {
+      width: 250px;
+      height: 250px;
+    }
+
+    .display-screen {
+      font-size: 1.2rem;
+    }
+
+    .number-circle {
+      width: 38px;
+      height: 38px;
+      font-size: 1.1rem;
+    }
+  }
+</style>

@@ -16,6 +16,7 @@ const { id, label, required = false } = Astro.props;
       <div class="roulette-display" data-roulette="day">
         <div class="roulette-numbers" data-roulette-numbers="day"></div>
       </div>
+      <button type="button" class="spin-btn-small" data-spin-day>🎰</button>
     </div>
     <div class="roulette-separator">/</div>
     <div class="roulette-slot">
@@ -23,6 +24,7 @@ const { id, label, required = false } = Astro.props;
       <div class="roulette-display" data-roulette="month">
         <div class="roulette-numbers" data-roulette-numbers="month"></div>
       </div>
+      <button type="button" class="spin-btn-small" data-spin-month>🎰</button>
     </div>
     <div class="roulette-separator">/</div>
     <div class="roulette-slot">
@@ -30,14 +32,18 @@ const { id, label, required = false } = Astro.props;
       <div class="roulette-display" data-roulette="year">
         <div class="roulette-numbers" data-roulette-numbers="year"></div>
       </div>
+      <div class="year-controls">
+        <button type="button" class="year-btn" data-year-minus>−</button>
+        <button type="button" class="year-btn" data-year-plus>+</button>
+      </div>
     </div>
   </div>
-  <button type="button" class="spin-btn" data-spin-btn>🎰 Lancer les roulettes</button>
   <input type="hidden" id={id} name={id} data-roulette-input />
 </div>
 
 <script>
-  const spinBtn = document.querySelector('[data-spin-btn]');
+  const spinDayBtn = document.querySelector('[data-spin-day]');
+  const spinMonthBtn = document.querySelector('[data-spin-month]');
   const hiddenInput = document.querySelector('[data-roulette-input]') as HTMLInputElement;
 
   const dayDisplay = document.querySelector('[data-roulette-numbers="day"]') as HTMLElement;
@@ -47,6 +53,9 @@ const { id, label, required = false } = Astro.props;
   let currentDay = 15;
   let currentMonth = 6;
   let currentYear = 2000;
+
+  let availableDays = Array.from({ length: 31 }, (_, i) => i + 1);
+  let availableMonths = Array.from({ length: 12 }, (_, i) => i + 1);
 
   function initializeRoulettes() {
     if (dayDisplay) dayDisplay.textContent = String(currentDay).padStart(2, '0');
@@ -64,20 +73,24 @@ const { id, label, required = false } = Astro.props;
 
   function spinRoulette(
     element: HTMLElement,
-    min: number,
-    max: number,
+    availableValues: number[],
     duration: number,
     callback: (finalValue: number) => void
   ) {
+    if (availableValues.length === 0) {
+      return;
+    }
+
     const startTime = Date.now();
-    const finalValue = Math.floor(Math.random() * (max - min + 1)) + min;
+    const randomIndex = Math.floor(Math.random() * availableValues.length);
+    const finalValue = availableValues[randomIndex];
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
       if (progress < 1) {
-        const randomValue = Math.floor(Math.random() * (max - min + 1)) + min;
+        const randomValue = availableValues[Math.floor(Math.random() * availableValues.length)];
         element.textContent = String(randomValue).padStart(2, '0');
         element.style.transform = `translateY(${Math.sin(progress * Math.PI * 10) * 5}px)`;
         requestAnimationFrame(animate);
@@ -91,39 +104,66 @@ const { id, label, required = false } = Astro.props;
     animate();
   }
 
-  if (spinBtn) {
-    spinBtn.addEventListener('click', () => {
-      spinBtn.setAttribute('disabled', 'true');
+  if (spinDayBtn) {
+    spinDayBtn.addEventListener('click', () => {
+      if (availableDays.length === 0) return;
 
-      let completedSpins = 0;
-      const totalSpins = 3;
+      spinDayBtn.setAttribute('disabled', 'true');
 
-      const onSpinComplete = () => {
-        completedSpins++;
-        if (completedSpins === totalSpins) {
-          updateHiddenInput();
-          spinBtn.removeAttribute('disabled');
-        }
-      };
-
-      spinRoulette(dayDisplay, 1, 31, 2000, (value) => {
+      spinRoulette(dayDisplay, availableDays, 2000, (value) => {
         currentDay = value;
-        onSpinComplete();
+        availableDays = availableDays.filter(d => d !== value);
+        updateHiddenInput();
+        spinDayBtn.removeAttribute('disabled');
+
+        if (availableDays.length === 0) {
+          spinDayBtn.style.opacity = '0.3';
+          spinDayBtn.style.cursor = 'not-allowed';
+        }
       });
+    });
+  }
 
-      setTimeout(() => {
-        spinRoulette(monthDisplay, 1, 12, 2500, (value) => {
-          currentMonth = value;
-          onSpinComplete();
-        });
-      }, 300);
+  if (spinMonthBtn) {
+    spinMonthBtn.addEventListener('click', () => {
+      if (availableMonths.length === 0) return;
 
-      setTimeout(() => {
-        spinRoulette(yearDisplay, 1950, 2010, 3000, (value) => {
-          currentYear = value;
-          onSpinComplete();
-        });
-      }, 600);
+      spinMonthBtn.setAttribute('disabled', 'true');
+
+      spinRoulette(monthDisplay, availableMonths, 2000, (value) => {
+        currentMonth = value;
+        availableMonths = availableMonths.filter(m => m !== value);
+        updateHiddenInput();
+        spinMonthBtn.removeAttribute('disabled');
+
+        if (availableMonths.length === 0) {
+          spinMonthBtn.style.opacity = '0.3';
+          spinMonthBtn.style.cursor = 'not-allowed';
+        }
+      });
+    });
+  }
+
+  const yearMinusBtn = document.querySelector('[data-year-minus]');
+  const yearPlusBtn = document.querySelector('[data-year-plus]');
+
+  if (yearMinusBtn) {
+    yearMinusBtn.addEventListener('click', () => {
+      if (currentYear > 1900) {
+        currentYear--;
+        if (yearDisplay) yearDisplay.textContent = String(currentYear);
+        updateHiddenInput();
+      }
+    });
+  }
+
+  if (yearPlusBtn) {
+    yearPlusBtn.addEventListener('click', () => {
+      if (currentYear < 2100) {
+        currentYear++;
+        if (yearDisplay) yearDisplay.textContent = String(currentYear);
+        updateHiddenInput();
+      }
     });
   }
 
@@ -211,39 +251,72 @@ const { id, label, required = false } = Astro.props;
     color: rgb(80, 80, 80);
   }
 
-  .spin-btn {
-    padding: 1rem;
+  .spin-btn-small {
+    padding: 0.5rem 0.75rem;
     background: linear-gradient(135deg, rgb(203, 163, 35), rgb(180, 140, 20));
     color: rgb(13, 13, 13);
     border: none;
-    border-radius: 20px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 1.2rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow:
-      0 4px 15px rgba(203, 163, 35, 0.4),
+      0 2px 8px rgba(203, 163, 35, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-top: 0.5rem;
   }
 
-  .spin-btn:hover {
-    transform: translateY(-2px);
+  .spin-btn-small:hover {
+    transform: translateY(-2px) scale(1.05);
     box-shadow:
-      0 6px 20px rgba(203, 163, 35, 0.6),
+      0 4px 12px rgba(203, 163, 35, 0.6),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
     background: linear-gradient(135deg, rgb(220, 180, 50), rgb(203, 163, 35));
   }
 
-  .spin-btn:active {
-    transform: translateY(0);
+  .spin-btn-small:active {
+    transform: translateY(0) scale(1);
   }
 
-  .spin-btn:disabled {
+  .spin-btn-small:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+  }
+
+  .year-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .year-btn {
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, rgb(203, 163, 35), rgb(180, 140, 20));
+    color: rgb(13, 13, 13);
+    border: none;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow:
+      0 2px 8px rgba(203, 163, 35, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    min-width: 45px;
+  }
+
+  .year-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+      0 4px 12px rgba(203, 163, 35, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgb(220, 180, 50), rgb(203, 163, 35));
+  }
+
+  .year-btn:active {
+    transform: translateY(0) scale(1);
   }
 
   @media (max-width: 500px) {
