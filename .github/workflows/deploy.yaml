@@ -24,7 +24,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: ./apps/backend
           push: true
           tags: ${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=registry,ref=${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest
@@ -88,4 +88,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SCW_SECRET_KEY }}
           AWS_REGION: 'fr-par'
           AWS_S3_ENDPOINT: https://s3.fr-par.scw.cloud
-          SOURCE_DIR: './frontend/dist'
+          SOURCE_DIR: './apps/frontend/dist'
