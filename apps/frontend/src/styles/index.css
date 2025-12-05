@@ -9,6 +9,25 @@
     background-color: rgb(20, 20, 20);
 }
 
+.acdi-header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    z-index: 100;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.acdi-header:hover {
+    color: rgb(203, 163, 35);
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
 .slogan p {
     width: 40%;
     color: white;
