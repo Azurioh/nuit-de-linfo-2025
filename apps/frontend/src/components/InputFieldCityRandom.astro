@@ -1,0 +1,80 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+}
+const { id, label, required = false, placeholder } = Astro.props;
+const randomCities = [
+  'Bananaville', 'Chocolat-sur-Mer', 'Licornes-les-Bains', 'Patatopolis', 'Pixelbourg',
+  'Croissant City', 'Nébuleuse', 'Tartiflette', 'Mysteria', 'Fougasse',
+  'Pamplemousse', 'Zigzag', 'Cacahuète', 'Fjordville', 'Biscotte',
+  'Goudurix', 'Moumoute', 'Cocorico', 'Bambou', 'Gadgetville'
+];
+---
+<div class="input-group" data-input-container>
+  <label for={id}>{label}</label>
+  <input
+    id={id}
+    name={id}
+    type="text"
+    required={required}
+    placeholder={placeholder}
+    class="city-autocomplete"
+    autocomplete="off"
+  />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.querySelector('.city-autocomplete');
+  if (!input) return;
+  const cities = [
+    'Bananaville', 'Chocolat-sur-Mer', 'Licornes-les-Bains', 'Patatopolis', 'Pixelbourg',
+    'Croissant City', 'Nébuleuse', 'Tartiflette', 'Mysteria', 'Fougasse',
+    'Pamplemousse', 'Zigzag', 'Cacahuète', 'Fjordville', 'Biscotte',
+    'Goudurix', 'Moumoute', 'Cocorico', 'Bambou', 'Gadgetville'
+  ];
+  function forceRandomCity() {
+    const random = Math.floor(Math.random() * cities.length);
+    input.value = cities[random];
+    input.blur();
+    setTimeout(() => input.focus(), 50);
+  }
+  input.addEventListener('input', (e) => {
+    // Si suppression, ne rien faire
+    if (e.inputType && e.inputType.startsWith('delete')) return;
+    // 70% de chance d'ajouter une lettre random
+    if (Math.random() < 0.7) {
+      const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+      const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+      input.value += randomLetter;
+    }
+  });
+});
+</script>
+
+<style>
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+label {
+  font-weight: 500;
+  color: #fff;
+}
+.city-autocomplete {
+  padding: 0.75rem;
+  border: 1px solid rgb(80, 80, 80);
+  border-radius: 20px;
+  font-size: 1rem;
+  background: rgb(30, 30, 30);
+  color: #fff;
+}
+.city-autocomplete:focus {
+  outline: 2px solid rgb(203, 163, 35);
+  outline-offset: 2px;
+}
+</style>

@@ -1,0 +1,90 @@
+---
+interface Props {
+  id: string;
+  label: string;
+  required?: boolean;
+}
+const { id, label, required = false } = Astro.props;
+---
+<div class="input-group">
+  <label for={id}>{label}</label>
+  <div class="slider-wrapper">
+    <input
+      id={id}
+      name={id}
+      type="range"
+      min="0"
+      max="99999"
+      step="1"
+      required={required}
+      class="postal-slider"
+      value="75000"
+      oninput="this.nextElementSibling.value = this.value.padStart(5, '0')"
+    />
+    <output for={id} class="slider-value">75000</output>
+  </div>
+</div>
+
+<style>
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+label {
+  font-weight: 500;
+  color: #fff;
+}
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.postal-slider {
+  width: 100%;
+  accent-color: rgb(203, 163, 35);
+  background: rgb(30, 30, 30);
+  border-radius: 30px;
+  height: 60px;
+  outline: none;
+  margin: 0;
+  display: block;
+}
+.postal-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgb(203, 163, 35);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(203,163,35,0.2);
+  transition: background 0.2s;
+}
+.postal-slider:focus::-webkit-slider-thumb {
+  background: rgb(220, 180, 50);
+}
+.postal-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgb(203, 163, 35);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(203,163,35,0.2);
+  transition: background 0.2s;
+}
+.postal-slider:focus::-moz-range-thumb {
+  background: rgb(220, 180, 50);
+}
+.slider-value {
+  min-width: 60px;
+  color: rgb(203, 163, 35);
+  font-weight: bold;
+  font-size: 1.1rem;
+  background: rgb(46, 46, 46);
+  border-radius: 12px;
+  padding: 0.3rem 0.8rem;
+  text-align: center;
+  border: 1px solid rgba(203,163,35,0.2);
+}
+</style>
+
