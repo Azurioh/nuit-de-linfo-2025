@@ -39,11 +39,10 @@ jobs:
           default-project-id: ${{ secrets.SCW_PROJECT_ID }}
           default-region: ${{ env.SCW_DEFAULT_REGION }}
 
-      - name: Deploy to Serverless Containers
+      - name: Update Container Configuration
         run: |
-          scw container container deploy \
+          scw container container update \
             container-id=${{ secrets.SCW_CONTAINER_ID }} \
-            name=${{ env.IMAGE_NAME }} \
             registry-image=${{ secrets.SCW_REGISTRY_URL }}/${{ env.IMAGE_NAME }}:latest \
             min-scale=0 \
             max-scale=5 \
@@ -54,6 +53,17 @@ jobs:
             env.APP_ENV=${{ secrets.APP_ENV }} \
             env.MODEL_NAME=${{ secrets.MODEL_NAME }} \
             env.SERVER_ADDRESS=0.0.0.0:8080
+        env:
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
+          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+          SCW_DEFAULT_REGION: ${{ env.SCW_DEFAULT_REGION }}
+
+      - name: Deploy to Serverless Containers
+        run: |
+          scw container container deploy \
+            container-id=${{ secrets.SCW_CONTAINER_ID }}
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
