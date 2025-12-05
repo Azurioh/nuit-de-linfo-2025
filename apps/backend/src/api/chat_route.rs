@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use std::collections::HashMap;
 use crate::domain::models::{ChatRequest, OllamaResponse, Message, ConversationSession, AppStateInternal};
+use crate::domain::errors::AppError;
 use crate::infrastructure::ollama_client::OllamaClient;
 use std::time::Instant;
 
@@ -14,7 +15,7 @@ pub async fn chat_handler(
     req: web::Json<ChatRequest>,
     ollama: web::Data<OllamaClient>,
     state: web::Data<AppState>,
-) -> impl Responder {
+) -> Result<impl Responder, AppError> {
     let conversation_id = req.conversation_id.unwrap_or_else(Uuid::new_v4);
 
     // Check cache with fuzzy matching
@@ -86,9 +87,9 @@ pub async fn chat_handler(
                 content: cached_response.clone(),
             });
 
-            return HttpResponse::Ok()
+            return Ok(HttpResponse::Ok()
                 .append_header(("X-Conversation-Id", conversation_id.to_string()))
-                .body(cached_response.clone());
+                .body(cached_response.clone()));
         }
 
 
@@ -156,74 +157,71 @@ pub async fn chat_handler(
         generation_messages
     };
 
-    match ollama.get_ref().clone().generate_chat_stream(messages).await {
-        Ok(stream) => {
-            let accumulated_response = Arc::new(Mutex::new(String::new()));
-            let acc_clone = accumulated_response.clone();
-            let state_clone = state.get_ref().clone();
-            let conversation_id_clone = conversation_id;
-            let prompt_clone = req.prompt.clone();
+    let stream = ollama.get_ref().clone().generate_chat_stream(messages).await?;
 
-            let response_stream = stream.map(move |result| {
-                match result {
-                    Ok(bytes) => {
-                        let text = String::from_utf8_lossy(&bytes);
-                        let mut chunk_text = String::new();
-                        for line in text.lines() {
-                            if !line.trim().is_empty() {
-                                if let Ok(json) = serde_json::from_str::<OllamaResponse>(line) {
-                                    chunk_text.push_str(&json.message.content);
-                                }
-                            }
+    let accumulated_response = Arc::new(Mutex::new(String::new()));
+    let acc_clone = accumulated_response.clone();
+    let state_clone = state.get_ref().clone();
+    let conversation_id_clone = conversation_id;
+    let prompt_clone = req.prompt.clone();
+
+    let response_stream = stream.map(move |result| {
+        match result {
+            Ok(bytes) => {
+                let text = String::from_utf8_lossy(&bytes);
+                let mut chunk_text = String::new();
+                for line in text.lines() {
+                    if !line.trim().is_empty() {
+                        if let Ok(json) = serde_json::from_str::<OllamaResponse>(line) {
+                            chunk_text.push_str(&json.message.content);
                         }
-
-                        if !chunk_text.is_empty() {
-                            if let Ok(mut acc) = acc_clone.lock() {
-                                acc.push_str(&chunk_text);
-                            }
-                        }
-
-                        Ok(web::Bytes::from(chunk_text)) as Result<web::Bytes, actix_web::Error>
-                    },
-                    Err(e) => Err(actix_web::error::ErrorInternalServerError(e)),
-                }
-            });
-
-            // Chain a final step to save the accumulated response
-            let final_stream = response_stream.chain(futures::stream::once(async move {
-                let content = {
-                    let acc = accumulated_response.lock().unwrap();
-                    acc.clone()
-                };
-
-                if !content.is_empty() {
-                    let mut state_guard = state_clone.lock().unwrap();
-
-                    // Store in cache
-                    println!("Storing response in cache for prompt: \"{}\"", prompt_clone);
-                    state_guard.cache.put(prompt_clone, content.clone());
-
-                    if let Some(session) = state_guard.sessions.get_mut(&conversation_id_clone) {
-                        session.messages.push(Message {
-                            role: "assistant".to_string(),
-                            content,
-                        });
-                        session.last_activity = Instant::now(); // Update activity on completion too
                     }
                 }
 
-                // Return an empty result to satisfy the stream type, but it won't yield data
-                // Actually, chain expects the same Item type.
-                // We return Ok(Bytes::new()) which is empty and harmless.
-                Ok(web::Bytes::new())
-            }));
+                if !chunk_text.is_empty() {
+                    if let Ok(mut acc) = acc_clone.lock() {
+                        acc.push_str(&chunk_text);
+                    }
+                }
 
-            HttpResponse::Ok()
-                .append_header(("X-Conversation-Id", conversation_id.to_string()))
-                .streaming(final_stream)
-        },
-        Err(_) => HttpResponse::InternalServerError().body("Service indisponible"),
-    }
+                Ok(web::Bytes::from(chunk_text)) as Result<web::Bytes, actix_web::Error>
+            },
+            Err(e) => Err(actix_web::error::ErrorInternalServerError(e)),
+        }
+    });
+
+    // Chain a final step to save the accumulated response
+    let final_stream = response_stream.chain(futures::stream::once(async move {
+        let content = {
+            let acc = accumulated_response.lock().unwrap();
+            acc.clone()
+        };
+
+        if !content.is_empty() {
+            let mut state_guard = state_clone.lock().unwrap();
+
+            // Store in cache
+            println!("Storing response in cache for prompt: \"{}\"", prompt_clone);
+            state_guard.cache.put(prompt_clone, content.clone());
+
+            if let Some(session) = state_guard.sessions.get_mut(&conversation_id_clone) {
+                session.messages.push(Message {
+                    role: "assistant".to_string(),
+                    content,
+                });
+                session.last_activity = Instant::now(); // Update activity on completion too
+            }
+        }
+
+        // Return an empty result to satisfy the stream type, but it won't yield data
+        // Actually, chain expects the same Item type.
+        // We return Ok(Bytes::new()) which is empty and harmless.
+        Ok(web::Bytes::new())
+    }));
+
+    Ok(HttpResponse::Ok()
+        .append_header(("X-Conversation-Id", conversation_id.to_string()))
+        .streaming(final_stream))
 }
 
 #[get("/api/hello")]

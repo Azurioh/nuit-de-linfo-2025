@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use reqwest::Client;
 use crate::domain::models::{OllamaChatRequest, Message};
+use crate::domain::errors::AppError;
 
 #[derive(Clone)]
 pub struct OllamaClient {
@@ -22,7 +23,7 @@ impl OllamaClient {
     }
 
 
-    pub async fn generate_chat_stream(self, messages: Vec<Message>) -> Result<impl futures::Stream<Item = Result<actix_web::web::Bytes, reqwest::Error>>, reqwest::Error> {
+    pub async fn generate_chat_stream(self, messages: Vec<Message>) -> Result<impl futures::Stream<Item = Result<actix_web::web::Bytes, reqwest::Error>>, AppError> {
         let request_body = OllamaChatRequest {
             model: self.model.as_ref().clone(),
             messages,
@@ -33,12 +34,21 @@ impl OllamaClient {
             .post(self.base_url.as_ref())
             .json(&request_body)
             .send()
-            .await?;
+            .await
+            .map_err(|e| {
+                if e.is_timeout() {
+                    AppError::OllamaTimeout
+                } else if e.is_connect() {
+                    AppError::OllamaServiceUnavailable
+                } else {
+                    AppError::InternalError(e.to_string())
+                }
+            })?;
 
         Ok(res.bytes_stream())
     }
 
-    pub async fn generate_chat_completion(&self, messages: Vec<Message>) -> Result<crate::domain::models::OllamaResponse, reqwest::Error> {
+    pub async fn generate_chat_completion(&self, messages: Vec<Message>) -> Result<crate::domain::models::OllamaResponse, AppError> {
         let request_body = OllamaChatRequest {
             model: self.model.as_ref().clone(),
             messages,
@@ -49,8 +59,19 @@ impl OllamaClient {
             .post(self.base_url.as_ref())
             .json(&request_body)
             .send()
-            .await?;
+            .await
+            .map_err(|e| {
+                if e.is_timeout() {
+                    AppError::OllamaTimeout
+                } else if e.is_connect() {
+                    AppError::OllamaServiceUnavailable
+                } else {
+                    AppError::InternalError(e.to_string())
+                }
+            })?;
 
-        res.json::<crate::domain::models::OllamaResponse>().await
+        res.json::<crate::domain::models::OllamaResponse>()
+            .await
+            .map_err(|e| AppError::InternalError(e.to_string()))
     }
 }
