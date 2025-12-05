@@ -48,30 +48,5 @@ impl OllamaClient {
         Ok(res.bytes_stream())
     }
 
-    pub async fn generate_chat_completion(&self, messages: Vec<Message>) -> Result<crate::domain::models::OllamaResponse, AppError> {
-        let request_body = OllamaChatRequest {
-            model: self.model.as_ref().clone(),
-            messages,
-            stream: false,
-        };
 
-        let res = self.client
-            .post(self.base_url.as_ref())
-            .json(&request_body)
-            .send()
-            .await
-            .map_err(|e| {
-                if e.is_timeout() {
-                    AppError::OllamaTimeout
-                } else if e.is_connect() {
-                    AppError::OllamaServiceUnavailable
-                } else {
-                    AppError::InternalError(e.to_string())
-                }
-            })?;
-
-        res.json::<crate::domain::models::OllamaResponse>()
-            .await
-            .map_err(|e| AppError::InternalError(e.to_string()))
-    }
 }

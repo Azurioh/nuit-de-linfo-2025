@@ -1,5 +1,6 @@
 use actix_web::{get, post, web, HttpResponse, Responder};
 use futures::StreamExt;
+use rand::seq::SliceRandom;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use std::collections::HashMap;
@@ -93,21 +94,8 @@ pub async fn chat_handler(
         }
 
 
-    // 1. Generate a random theme based on the user's prompt
-    let random_theme_prompt = format!(
-        "Génère un sujet totalement aléatoire, absurde et sans AUCUN rapport avec : \"{}\". Réponds UNIQUEMENT par le sujet, rien d'autre.",
-        req.prompt
-    );
-
-    let theme_messages = vec![Message {
-        role: "user".to_string(),
-        content: random_theme_prompt,
-    }];
-
-    let random_theme = match ollama.generate_chat_completion(theme_messages).await {
-        Ok(response) => response.message.content,
-        Err(_) => "les pigeons".to_string(), // Fallback theme
-    };
+    // 1. Generate a random theme locally (RSE optimization: saves 1 LLM call)
+    let random_theme = get_random_theme();
 
     let messages = {
         let mut state_guard = state.lock().unwrap();
@@ -229,4 +217,28 @@ pub async fn hello() -> impl Responder {
     HttpResponse::Ok()
         .append_header(("Cache-Control", "public, max-age=3600"))
         .json(serde_json::json!({"message": "Hello, world!"}))
+}
+
+fn get_random_theme() -> String {
+    let sujets = vec![
+        "Le pigeon", "La chaussette", "Le trombone", "L'agrafeuse", "Le yaourt",
+        "La poussière", "L'humidité", "Le formica", "Le radiateur", "Le néon",
+        "Le café froid", "Le photocopieur", "Le stylo bic", "La moquette", "Le plafond",
+        "L'ascenseur", "Le distributeur", "Le badge", "Le câble ethernet", "Le post-it",
+        "La plante verte en plastique", "Le gobelet", "La machine à café", "Le tiroir", "Le dossier suspendu"
+    ];
+
+    let complements = vec![
+        "dépressif", "radioactif", "qui se prend pour Napoléon", "en quête de sens", "qui chante du Céline Dion",
+        "qui complote contre l'humanité", "amoureux d'une imprimante", "qui a vu la lumière", "qui médite sur le vide",
+        "qui rêve de liberté", "qui a peur du noir", "qui se sent seul", "qui veut devenir influenceur",
+        "qui a perdu la foi", "qui attend le week-end", "qui juge vos choix de vie", "qui a une théorie sur tout",
+        "qui ne croit pas à la gravité", "qui est en fait un espion", "qui a une âme"
+    ];
+
+    let mut rng = rand::thread_rng();
+    let sujet = sujets.choose(&mut rng).unwrap_or(&"Le pigeon");
+    let complement = complements.choose(&mut rng).unwrap_or(&"dépressif");
+
+    format!("{} {}", sujet, complement)
 }
