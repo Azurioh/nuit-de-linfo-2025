@@ -49,10 +49,10 @@ jobs:
             memory-limit=512 \
             cpu-limit=500 \
             port=8080 \
-            env.MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }} \
-            env.APP_ENV=${{ secrets.APP_ENV }} \
-            env.MODEL_NAME=${{ secrets.MODEL_NAME }} \
-            env.SERVER_ADDRESS=0.0.0.0:8080
+            environment-variables.MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }} \
+            environment-variables.APP_ENV=${{ secrets.APP_ENV }} \
+            environment-variables.MODEL_NAME=${{ secrets.MODEL_NAME }} \
+            environment-variables.SERVER_ADDRESS=0.0.0.0:8080
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
