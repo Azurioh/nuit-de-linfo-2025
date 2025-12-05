@@ -3,19 +3,21 @@ import Footer from "../components/Footer.astro";
 import Navbar from "../components/Navbar.astro";
 import Layout from "../layouts/Layout.astro";
 import "../styles/index.css";
+import { Image } from 'astro:assets';
+import adaLovelaceImage from '../assets/ada_lovelace.jpg';
 ---
 
 <Layout>
     <Navbar />
-    
+
     <div class="acdi-hero">
         <div class="hero-content">
             <h1>Défi ACDI <span class="year">2025</span></h1>
             <h2>Les femmes dans le numérique</h2>
-            
+
             <div class="podcast-player">
                 <p class="podcast-label">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
                     Écouter le brief audio
                 </p>
                 <audio controls src="/song/Podcast.ogg">
@@ -36,15 +38,14 @@ import "../styles/index.css";
             </p>
         </div>
         <div class="image-block">
-             <img src="image/ada_lovelace.jpg" alt="Portrait d'Ada Lovelace" />
+             <Image src={adaLovelaceImage} alt="Portrait d'Ada Lovelace" loading={'lazy'} />
              <p class="caption">Ada Lovelace, pionnière de l'informatique</p>
-        </div>
         </div>
     </div>
 
     <div class="requirements-section">
         <div class="title">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgb(203, 163, 35)" stroke-width="2">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" stroke-width="2" aria-hidden="true">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
                 <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -53,7 +54,7 @@ import "../styles/index.css";
             </svg>
             <h3>Éléments attendus</h3>
         </div>
-        
+
         <div class="content-box">
             <p class="intro">
                 Dans le cadre du sujet national, il s’agit de :
@@ -82,8 +83,8 @@ import "../styles/index.css";
         align-items: center;
         justify-content: center;
         height: 400px; /* Moins haut que le slogan de l'accueil */
-        background-color: rgb(20, 20, 20);
-        border-bottom: 1px solid rgb(46, 46, 46);
+        background-color: var(--bg-card);
+        border-bottom: 1px solid var(--border-color);
         text-align: center;
         padding: 0 20px;
     }
@@ -95,17 +96,17 @@ import "../styles/index.css";
     }
 
     .acdi-hero h1 {
-        color: white;
+        color: var(--text-highlight);
         font-size: 50px;
         margin-bottom: 10px;
     }
 
     .acdi-hero .year {
-        color: rgb(203, 163, 35); /* Couleur Or */
+        color: var(--accent-gold); /* Couleur Or */
     }
 
     .acdi-hero h2 {
-        color: grey;
+        color: var(--text-main);
         font-size: 24px;
         font-weight: normal;
         margin-bottom: 40px;
@@ -113,10 +114,10 @@ import "../styles/index.css";
 
     /* Podcast Player Styling */
     .podcast-player {
-        background: rgb(30, 30, 30);
+        background: var(--bg-podcast);
         padding: 20px;
         border-radius: 8px;
-        border: 1px solid rgb(46, 46, 46);
+        border: 1px solid var(--border-color);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -126,7 +127,7 @@ import "../styles/index.css";
     }
 
     .podcast-label {
-        color: rgb(203, 163, 35);
+        color: var(--accent-gold);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -146,14 +147,14 @@ import "../styles/index.css";
         align-items: center;
         justify-content: center;
         padding: 80px 50px;
-        background-color: rgb(20, 20, 20);
+        background-color: var(--bg-card);
         gap: 60px;
-        border-bottom: 1px solid rgb(46, 46, 46);
+        border-bottom: 1px solid var(--border-color);
     }
 
     .context-section .text-block {
         width: 50%;
-        color: grey;
+        color: var(--text-main);
         font-size: 18px;
         line-height: 1.6;
         display: flex;
@@ -162,18 +163,18 @@ import "../styles/index.css";
     }
 
     .context-section strong {
-        color: white;
+        color: var(--text-highlight);
     }
 
     .context-section .gold {
-        color: rgb(203, 163, 35);
+        color: var(--accent-gold);
         font-weight: bold;
     }
 
     .context-section .highlight-text {
         font-size: 22px;
-        color: white;
-        border-left: 4px solid rgb(203, 163, 35);
+        color: var(--text-highlight);
+        border-left: 4px solid var(--accent-gold);
         padding-left: 20px;
     }
 
@@ -188,21 +189,21 @@ import "../styles/index.css";
         width: 100%;
         height: auto; /* Garde les proportions */
         border-radius: 10px;
-        border: 1px solid rgb(46, 46, 46); /* Bordure discrète */
+        border: 1px solid var(--border-color); /* Bordure discrète */
         box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); /* Ombre pour donner de la profondeur */
         transition: transform 0.3s ease, border-color 0.3s ease;
     }
 
     /* Petit effet au survol */
     .context-section .image-block img:hover {
-        border-color: rgb(203, 163, 35); /* Devient doré au survol */
+        border-color: var(--accent-gold); /* Devient doré au survol */
         transform: scale(1.02);
     }
 
     /* Légende sous la photo (optionnel) */
     .context-section .image-block .caption {
         margin-top: 10px;
-        color: grey;
+        color: var(--text-main);
         font-size: 14px;
         font-style: italic;
     }
@@ -210,24 +211,24 @@ import "../styles/index.css";
     .image-placeholder {
         width: 100%;
         height: 300px;
-        background: radial-gradient(circle at center, rgb(46, 46, 46) 0%, rgb(20, 20, 20) 100%);
+        background: radial-gradient(circle at center, var(--border-color) 0%, var(--bg-card) 100%);
         border: 1px dashed rgb(100, 100, 100);
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: grey;
+        color: var(--text-main);
         text-align: center;
     }
 
     /* --- REQUIREMENTS SECTION --- */
     .requirements-section {
         padding: 60px 50px;
-        background-color: rgb(20, 20, 20);
+        background-color: var(--bg-card);
         display: flex;
         flex-direction: column;
         align-items: center;
-        border-bottom: 1px solid rgb(46, 46, 46);
+        border-bottom: 1px solid var(--border-color);
     }
 
     .requirements-section .title {
@@ -238,13 +239,13 @@ import "../styles/index.css";
     }
 
     .requirements-section h3 {
-        color: white;
+        color: var(--text-highlight);
         font-size: 30px;
     }
 
     .requirements-section .content-box {
-        background-color: rgb(25, 25, 25);
-        border: 1px solid rgb(46, 46, 46);
+        background-color: var(--bg-card-hover);
+        border: 1px solid var(--border-color);
         padding: 40px;
         border-radius: 8px;
         width: 100%;
@@ -252,7 +253,7 @@ import "../styles/index.css";
     }
 
     .requirements-section .intro {
-        color: white;
+        color: var(--text-highlight);
         font-size: 20px;
         margin-bottom: 20px;
     }
@@ -270,15 +271,15 @@ import "../styles/index.css";
         align-items: center;
         gap: 15px;
         font-size: 18px;
-        color: grey;
+        color: var(--text-main);
     }
 
     .requirements-section li strong {
-        color: rgb(203, 163, 35);
+        color: var(--accent-gold);
     }
 
     .bullet-icon {
-        color: rgb(203, 163, 35);
+        color: var(--accent-gold);
         font-size: 24px;
         font-weight: bold;
     }
@@ -288,7 +289,7 @@ import "../styles/index.css";
         .context-section {
             flex-direction: column;
         }
-        .context-section .text-block, 
+        .context-section .text-block,
         .context-section .image-block {
             width: 100%;
         }

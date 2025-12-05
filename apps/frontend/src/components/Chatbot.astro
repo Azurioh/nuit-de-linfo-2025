@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import clippyImage from '../assets/clippy.png';
 ---
 
 <div id="chatbot-widget" class="chatbot-container">
@@ -8,7 +10,7 @@
     aria-label="Ouvrir la fenêtre de discussion"
     aria-expanded="false"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
     </svg>
   </button>
@@ -18,17 +20,17 @@
       <h2>Assistant</h2>
       <div style="display: flex; align-items: center; gap: 4px;">
         <button id="chatbot-reset" aria-label="Nouvelle conversation" title="Nouvelle conversation">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" /><path d="M3 3v9h9" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" /><path d="M3 3v9h9" /></svg>
         </button>
         <button id="chatbot-close" aria-label="Fermer la discussion">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
     </header>
 
     <div id="chatbot-messages" class="chatbot-messages" role="log" aria-live="polite">
       <div class="message-wrapper bot">
-        <img src="https://static.gosquared.com/images/april/clippy/icon_clippy_01@2x.png" class="clippy-avatar" alt="Clippy">
+        <Image src={clippyImage} class="clippy-avatar" alt="" />
         <div class="chatbot-message bot">
           <p>Bonjour ! Comment puis-je vous aider aujourd'hui ?</p>
         </div>
@@ -333,6 +335,7 @@
 
 <script>
   import { marked } from 'marked';
+  import clippyImage from '../assets/clippy.png';
 
   // Logique Client-Side (Vanilla JS pour performance)
   document.addEventListener('DOMContentLoaded', () => {
@@ -384,7 +387,7 @@
 
       if (sender === 'bot') {
           const img = document.createElement('img');
-          img.src = "https://static.gosquared.com/images/april/clippy/icon_clippy_01@2x.png";
+          img.src = clippyImage.src;
           img.classList.add('clippy-avatar');
           img.alt = "Clippy";
           wrapper.appendChild(img);
@@ -418,7 +421,7 @@
         loadingWrapper.classList.add('message-wrapper', 'bot');
 
         const img = document.createElement('img');
-        img.src = "https://media4.giphy.com/media/v1.Y2lkPTZjMDliOTUycmRxbG0ydjdhb3J1M2VhNDNtOWtwcHR6Mmg1MzZiazVna3RjNmx1ZSZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/3o85xKrwKwGLLeYDao/source.gif";
+        img.src = "/image/clippy-loading.gif";
         img.classList.add('clippy-avatar');
         loadingWrapper.appendChild(img);
 
@@ -475,7 +478,7 @@
         wrapper.classList.add('message-wrapper', 'bot');
 
         const botAvatar = document.createElement('img');
-        botAvatar.src = "https://static.gosquared.com/images/april/clippy/icon_clippy_01@2x.png";
+        botAvatar.src = clippyImage.src;
         botAvatar.classList.add('clippy-avatar');
         botAvatar.alt = "Clippy";
         wrapper.appendChild(botAvatar);

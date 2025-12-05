@@ -57,6 +57,7 @@ jobs:
             environment-variables.MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }} \
             environment-variables.APP_ENV=${{ secrets.APP_ENV }} \
             environment-variables.MODEL_NAME=${{ secrets.MODEL_NAME }} \
+            environment-variables.REDIS_URL=${{ secrets.REDIS_URL }} \
             environment-variables.SERVER_ADDRESS=0.0.0.0:8080
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}

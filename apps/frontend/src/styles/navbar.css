@@ -33,5 +33,6 @@
 }
 
 .navbar-section .register:hover {
-    color: white;
+    opacity: 0.9;
+    transform: scale(1.05);
 }

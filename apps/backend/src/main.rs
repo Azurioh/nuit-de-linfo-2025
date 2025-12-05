@@ -1,13 +1,12 @@
 mod config;
 mod api;
-mod domain;
+pub mod domain;
 mod infrastructure;
 
 use actix_cors::Cors;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
-use uuid::Uuid;
-use crate::domain::models::{Message, ConversationSession, AppStateInternal};
+use crate::domain::models::{AppStateInternal};
 use redis::Client as RedisClient;
 use infrastructure::mistral_client::MistralClient;
 use std::time::{Duration, Instant};
@@ -27,10 +26,11 @@ type AppState = Arc<Mutex<AppStateInternal>>;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     let config = Config::init();
 
     let mistral_client = MistralClient::new(config.mistral_api_key, config.model_name);
-    let redis_client = RedisClient::open("redis://redis:6379/").expect("Failed to create Redis client");
+    let redis_client = RedisClient::open(config.redis_url.as_str()).expect("Failed to create Redis client");
     let app_state: AppState = Arc::new(Mutex::new(AppStateInternal {
         sessions: HashMap::new(),
         cache: LruCache::new(NonZeroUsize::new(100).unwrap()),
@@ -53,12 +53,12 @@ async fn main() -> std::io::Result<()> {
             });
 
             if state.sessions.len() < initial_count {
-                println!("Cleaned up {} inactive sessions", initial_count - state.sessions.len());
+                log::info!("Cleaned up {} inactive sessions", initial_count - state.sessions.len());
             }
         }
     });
 
-    println!("Serveur lancé sur {}", config.server_address);
+    log::info!("Serveur lancé sur {}", config.server_address);
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()
@@ -130,10 +130,10 @@ async fn main() -> std::io::Result<()> {
     };
 
     if let Some(config) = tls_config {
-        println!("HTTP/2 Enabled (TLS) running on {}", Config::init().server_address);
+        log::info!("HTTP/2 Enabled (TLS) running on {}", Config::init().server_address);
         server.bind_rustls(Config::init().server_address, config)?.run().await
     } else {
-        println!("HTTP/1.1 Enabled (No TLS found) running on {}", Config::init().server_address);
+        log::info!("HTTP/1.1 Enabled (No TLS found) running on {}", Config::init().server_address);
         server.bind(Config::init().server_address)?.run().await
     }
 }

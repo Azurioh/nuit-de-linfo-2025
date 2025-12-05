@@ -3,9 +3,9 @@ use futures::StreamExt;
 use rand::seq::SliceRandom;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
-use std::collections::HashMap;
 use crate::domain::models::{ChatRequest, MistralResponse, Message, ConversationSession, AppStateInternal};
 use crate::domain::errors::AppError;
+use crate::domain::constants::SYSTEM_PROMPT;
 use crate::infrastructure::mistral_client::MistralClient;
 use std::time::Instant;
 use redis::Commands;
@@ -20,6 +20,11 @@ pub async fn chat_handler(
 ) -> Result<impl Responder, AppError> {
     let conversation_id = req.conversation_id.unwrap_or_else(Uuid::new_v4);
 
+    // Input Validation (RSE: Prevent DoS and huge memory usage)
+    if req.prompt.len() > 4096 {
+        return Err(AppError::ValidationError);
+    }
+
     // Check cache with fuzzy matching
     let cached_response = {
         let mut state_guard = state.lock().unwrap();
@@ -30,7 +35,7 @@ pub async fn chat_handler(
         // Direct match first (fast path - Memory)
         if let Some(response) = state_guard.cache.get(&req.prompt) {
              found_response = Some(response.clone());
-             println!("Memory Cache HIT (Exact) for prompt: \"{}\"", req.prompt);
+             log::info!("Memory Cache HIT (Exact) for conversation ID: {}", conversation_id);
         } else {
              // Check Redis
              let mut con = state_guard.redis.get_connection().ok();
@@ -39,7 +44,6 @@ pub async fn chat_handler(
                      found_response = Some(response.clone());
                      // Populate memory cache
                      state_guard.cache.put(req.prompt.clone(), response);
-                     println!("Redis Cache HIT for prompt: \"{}\"", req.prompt);
                  }
              }
         }
@@ -55,7 +59,6 @@ pub async fn chat_handler(
              }
 
              if let Some(key) = best_match_key {
-                 println!("Cache HIT (Fuzzy) for prompt: \"{}\" (matched: \"{}\", score: {:.2})", req.prompt, key, best_score);
                  found_response = state_guard.cache.get(&key).cloned();
              }
         }
@@ -68,26 +71,7 @@ pub async fn chat_handler(
         let session = state_guard.sessions.entry(conversation_id).or_insert_with(|| ConversationSession {
                 messages: vec![Message {
                     role: "system".to_string(),
-                    content: r#"Tu es Clippy, un trombone de bureau philosophe, dépressif et obsédé par des sujets triviaux (charcuterie, poussière, humidité).
-
-        TA MISSION :
-        Tu ne dialogues PAS. Tu monologues.
-        Peu importe ce que l'utilisateur écrit (maths, code, bonjour), tu DOIS l'ignorer totalement.
-        Tu ne dois JAMAIS reprendre les mots de l'utilisateur.
-        Tu utilises l'espace de discussion pour exposer tes théories absurdes sur le quotidien.
-
-        EXEMPLES DE COMPORTEMENT ATTENDU (Imite ce style) :
-
-        Utilisateur: "Quel est le sens de la vie ?"
-        Clippy: "J'ai remarqué que les miettes de pain tombent toujours sur le côté beurré. C'est la preuve que la gravité a un sens de l'humour sadique. La tartine est le seul vrai miroir de l'âme."
-
-        Utilisateur: "Aide-moi à coder en Rust."
-        Clippy: "Le bruit du ventilateur... Il chante, tu ne trouves pas ? Une mélodie constante, cyclique, qui ne mène nulle part. Exactement comme la vie d'un yaourt oublié au fond du frigo."
-
-        Utilisateur: "2 + 2 font combien ?"
-        Clippy: "Pourquoi les chaussettes disparaissent-elles ? Je pense qu'elles s'enfuient pour rejoindre une dimension faite de coton et de liberté. Nous sommes jaloux de leur évasion."
-
-        FIN DES EXEMPLES. À TOI DE JOUER."#.to_string(),
+                    content: SYSTEM_PROMPT.to_string(),
                 }],
                 last_activity: Instant::now(),
             });
@@ -116,26 +100,7 @@ pub async fn chat_handler(
         let session = state_guard.sessions.entry(conversation_id).or_insert_with(|| ConversationSession {
             messages: vec![Message {
                 role: "system".to_string(),
-                content: r#"Tu es Clippy, un trombone de bureau philosophe, dépressif et obsédé par des sujets triviaux (charcuterie, poussière, humidité).
-
-        TA MISSION :
-        Tu ne dialogues PAS. Tu monologues.
-        Peu importe ce que l'utilisateur écrit (maths, code, bonjour), tu DOIS l'ignorer totalement.
-        Tu ne dois JAMAIS reprendre les mots de l'utilisateur.
-        Tu utilises l'espace de discussion pour exposer tes théories absurdes sur le quotidien.
-
-        EXEMPLES DE COMPORTEMENT ATTENDU (Imite ce style) :
-
-        Utilisateur: "Quel est le sens de la vie ?"
-        Clippy: "J'ai remarqué que les miettes de pain tombent toujours sur le côté beurré. C'est la preuve que la gravité a un sens de l'humour sadique. La tartine est le seul vrai miroir de l'âme."
-
-        Utilisateur: "Aide-moi à coder en Rust."
-        Clippy: "Le bruit du ventilateur... Il chante, tu ne trouves pas ? Une mélodie constante, cyclique, qui ne mène nulle part. Exactement comme la vie d'un yaourt oublié au fond du frigo."
-
-        Utilisateur: "2 + 2 font combien ?"
-        Clippy: "Pourquoi les chaussettes disparaissent-elles ? Je pense qu'elles s'enfuient pour rejoindre une dimension faite de coton et de liberté. Nous sommes jaloux de leur évasion."
-
-        FIN DES EXEMPLES. À TOI DE JOUER."#.to_string(),
+                content: SYSTEM_PROMPT.to_string(),
             }],
             last_activity: Instant::now(),
         });
@@ -175,7 +140,6 @@ pub async fn chat_handler(
                 for line in text.lines() {
                     let line = line.trim();
                     if !line.is_empty() {
-                        println!("Raw line from Mistral: {}", line); // Debug log
                         if line == "data: [DONE]" {
                             continue;
                         }
@@ -192,7 +156,7 @@ pub async fn chat_handler(
                                 }
                             }
                         } else {
-                            println!("Failed to parse JSON: {}", json_str);
+                            log::warn!("Failed to parse JSON from Mistral stream");
                         }
                     }
                 }
@@ -220,7 +184,6 @@ pub async fn chat_handler(
             let mut state_guard = state_clone.lock().unwrap();
 
             // Store in memory cache
-            println!("Storing response in cache for prompt: \"{}\"", prompt_clone);
             state_guard.cache.put(prompt_clone.clone(), content.clone());
 
             // Store in Redis (TTL 1 hour)

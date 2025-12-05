@@ -10,6 +10,7 @@ services:
       - SERVER_ADDRESS=${SERVER_ADDRESS}
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
       - APP_ENV=${APP_ENV}
+      - REDIS_URL=${REDIS_URL}
     depends_on:
       - redis
     networks:

@@ -5,8 +5,8 @@ use std::fmt;
 pub enum AppError {
     OllamaTimeout,
     OllamaServiceUnavailable,
-    InternalError(String),
-    ValidationError(String),
+    InternalError,
+    ValidationError,
 }
 
 impl fmt::Display for AppError {
@@ -14,8 +14,8 @@ impl fmt::Display for AppError {
         match self {
             AppError::OllamaTimeout => write!(f, "Ollama service timed out"),
             AppError::OllamaServiceUnavailable => write!(f, "Ollama service is unavailable"),
-            AppError::InternalError(msg) => write!(f, "Internal server error: {}", msg),
-            AppError::ValidationError(msg) => write!(f, "Validation error: {}", msg),
+            AppError::InternalError => write!(f, "Internal server error, please contact an administrator"),
+            AppError::ValidationError => write!(f, "Validation error, please contact an administrator"),
         }
     }
 }
@@ -25,8 +25,8 @@ impl ResponseError for AppError {
         match self {
             AppError::OllamaTimeout => HttpResponse::GatewayTimeout().json("Ollama service timed out"),
             AppError::OllamaServiceUnavailable => HttpResponse::ServiceUnavailable().json("Ollama service is unavailable"),
-            AppError::InternalError(msg) => HttpResponse::InternalServerError().json(format!("Internal server error: {}", msg)),
-            AppError::ValidationError(msg) => HttpResponse::BadRequest().json(format!("Validation error: {}", msg)),
+            AppError::InternalError => HttpResponse::InternalServerError().json("Internal server error, please contact an administrator"),
+            AppError::ValidationError => HttpResponse::BadRequest().json("Validation error, please contact an administrator"),
         }
     }
 }

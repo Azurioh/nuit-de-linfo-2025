@@ -1,3 +1,15 @@
+:root {
+    --bg-dark: rgb(13, 13, 13);
+    --bg-card: rgb(20, 20, 20);
+    --bg-card-hover: rgb(25, 25, 25);
+    --bg-podcast: rgb(30, 30, 30);
+    --border-color: rgb(46, 46, 46);
+    --text-main: #B0B0B0;
+    --text-highlight: white;
+    --accent-gold: rgb(203, 163, 35);
+    --accent-error: red;
+}
+
 .slogan {
     flex-direction: row;
     display: flex;
@@ -5,36 +17,36 @@
     justify-content: center;
     height: 600px;
     padding: 50px;
-    border-bottom: 1px solid rgb(46, 46, 46);
-    background-color: rgb(20, 20, 20);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-card);
 }
 
 .acdi-header {
     height: 80px;
     display: flex;
     align-items: center;
-    
+
     text-decoration: none;
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: bold;
-    color: white;
+    color: var(--text-highlight);
     z-index: 100;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .acdi-header:hover {
-    color: rgb(203, 163, 35);
+    color: var(--accent-gold);
     transform: scale(1.05);
     cursor: pointer;
 }
 
 .slogan p {
     width: 40%;
-    color: white;
-    font-size: 40px;
+    color: var(--text-highlight);
+    font-size: 2.5rem;
 
     strong {
-        color: rgb(203, 163, 35);
+        color: var(--accent-gold);
     }
 }
 
@@ -59,7 +71,7 @@
     justify-content: flex-start;
     align-items: start;
     flex-direction: column;
-    color: white;
+    color: var(--text-highlight);
     width: 600px;
 }
 
@@ -68,12 +80,12 @@
     justify-content: flex-start;
     align-items: start;
     flex-direction: column;
-    color: grey;
+    color: var(--text-main);
     width: 500px;
 }
 
 .problem .content .text strong {
-    color: white;
+    color: var(--text-highlight);
 }
 
 
@@ -84,7 +96,7 @@
 }
 
 .problem .content .text .bullet-point .x {
-    color: red;
+    color: var(--accent-error);
     font-weight: lighter;
     padding-right: 5px;
 }
@@ -94,27 +106,27 @@
     display: flex;
     align-items: center;
     flex-direction: row;
-    color: white;
+    color: var(--text-highlight);
     gap: 20px;
 }
 
 .problem .key-numbers {
     display: flex;
     flex-direction: column;
-    border: 1px solid rgb(46, 46, 46);
+    border: 1px solid var(--border-color);
     width: 30%;
     border-radius: 5px;
-    background-color: rgb(20, 20, 20);
+    background-color: var(--bg-card);
 }
 
 .problem .key-numbers:hover {
-    border-color: red;
+    border-color: var(--accent-error);
 }
 
 .problem .key-numbers .header {
     display: flex;
-    color: red;
-    font-size: 20px;
+    color: var(--accent-error);
+    font-size: 1.25rem;
     font-weight: bold;
     gap: 10px;
     align-items: center;
@@ -127,27 +139,27 @@
 }
 
 .problem .key-numbers div .fact {
-    color: grey;
+    color: var(--text-main);
 }
 
 .problem .key-numbers .key-1 .number {
-    color: white;
+    color: var(--text-highlight);
     font-weight: bold;
 }
 
 .problem .key-numbers .key-2 .number {
-    color: red;
+    color: var(--accent-error);
     font-weight: bold;
 }
 
 .problem .key-numbers .key-3 .number {
-    color: red;
+    color: var(--accent-error);
     font-weight: bold;
 }
 
 .problem .key-numbers .separator {
     align-self: center;
-    border-bottom: 1px solid rgb(46, 46, 46);
+    border-bottom: 1px solid var(--border-color);
     width: 85%;
 }
 
@@ -158,23 +170,23 @@
     flex-direction: column;
     height: 180px;
     gap: 30px;
-    background-color: rgb(20, 20, 20);
-    border-bottom: 1px solid rgb(46, 46, 46);
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .solution .title h1 {
-    color: white;
+    color: var(--text-highlight);
 
     strong {
-        color: rgb(203, 163, 35);
+        color: var(--accent-gold);
     }
 }
 
 .solution .more-information a {
-    border: rgb(203, 163, 35) 1px solid;
+    border: var(--accent-gold) 1px solid;
     padding: 15px;
     border-radius: 5px;
     text-decoration: none;
-    color: rgb(203, 163, 35);
+    color: var(--accent-gold);
     font-weight: bold;
 }

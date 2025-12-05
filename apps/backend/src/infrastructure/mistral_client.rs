@@ -41,13 +41,15 @@ impl MistralClient {
                 } else if e.is_connect() {
                     AppError::OllamaServiceUnavailable
                 } else {
-                    AppError::InternalError(e.to_string())
+                    log::error!("Mistral API Error: {}", e);
+                    AppError::InternalError
                 }
             })?;
 
         if !res.status().is_success() {
              let error_text = res.text().await.unwrap_or_default();
-             return Err(AppError::InternalError(format!("Mistral API Error: {}", error_text)));
+             log::error!("Mistral API Error Response: {}", error_text);
+             return Err(AppError::InternalError);
         }
 
         Ok(res.bytes_stream())

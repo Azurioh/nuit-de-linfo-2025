@@ -42,8 +42,11 @@ pub struct ConversationSession {
 
 use lru::LruCache;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 
+/// RSE Policy: Data Retention
+/// This application stores conversation history in-memory (RAM) only.
+/// All data is ephemeral and will be lost upon application restart.
+/// Inactive sessions are automatically cleaned up after 1 hour to free resources.
 pub struct AppStateInternal {
     pub sessions: HashMap<Uuid, ConversationSession>,
     pub cache: LruCache<String, String>,

@@ -1,9 +1,11 @@
 ---
+import { Image } from "astro:assets";
 import Chatbot from "../components/Chatbot.astro";
 import Footer from "../components/Footer.astro";
 import Navbar from "../components/Navbar.astro";
 import Layout from "../layouts/Layout.astro";
 import "../styles/index.css";
+import backgroundImage from '../assets/image.png';
 
 export function getStaticPaths() {
   return [
@@ -25,9 +27,8 @@ const showChatbot = slug === 'chatbot';
 			LES <strong>ÉTABLISSEMENTS SCOLAIRES</strong>
 		</p>
 		<picture>
-			<img src="/image.png" />
+			<Image src={backgroundImage} alt={'Background'} />
 		</picture>
-		<!-- <img src="/image.png"> -->
 	</div>
 	<div class="problem">
 		<div class="content">
