@@ -430,7 +430,18 @@
         messagesContainer?.appendChild(loadingWrapper);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-        const response = await fetch('http://localhost:8080/chat', {
+        const apiUrl = import.meta.env.PUBLIC_CHATBOT_API_URL;
+
+        if (!apiUrl) {
+             console.error("PUBLIC_CHATBOT_API_URL environment variable is missing");
+             document.getElementById(loadingId)?.remove();
+             addMessage("Erreur technique : URL de l'API non configurée.", 'error');
+             input.disabled = false;
+             input.focus();
+             return;
+        }
+
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
