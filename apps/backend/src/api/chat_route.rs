@@ -3,11 +3,11 @@ use futures::StreamExt;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use std::collections::HashMap;
-use crate::domain::models::{ChatRequest, OllamaResponse, Message, ConversationSession};
+use crate::domain::models::{ChatRequest, OllamaResponse, Message, ConversationSession, AppStateInternal};
 use crate::infrastructure::ollama_client::OllamaClient;
 use std::time::Instant;
 
-type AppState = Arc<Mutex<HashMap<Uuid, ConversationSession>>>;
+type AppState = Arc<Mutex<AppStateInternal>>;
 
 #[post("/chat")]
 pub async fn chat_handler(
@@ -16,6 +16,59 @@ pub async fn chat_handler(
     state: web::Data<AppState>,
 ) -> impl Responder {
     let conversation_id = req.conversation_id.unwrap_or_else(Uuid::new_v4);
+
+    // Check cache
+    let cached_response = {
+        let mut state_guard = state.lock().unwrap();
+        state_guard.cache.get(&req.prompt).cloned()
+    };
+
+    if let Some(cached_response) = cached_response {
+        println!("Cache HIT for prompt: \"{}\"", req.prompt);
+        let mut state_guard = state.lock().unwrap();
+        // Update history
+        let session = state_guard.sessions.entry(conversation_id).or_insert_with(|| ConversationSession {
+                messages: vec![Message {
+                    role: "system".to_string(),
+                    content: r#"Tu es Clippy, un trombone de bureau philosophe, dépressif et obsédé par des sujets triviaux (charcuterie, poussière, humidité).
+
+        TA MISSION :
+        Tu ne dialogues PAS. Tu monologues.
+        Peu importe ce que l'utilisateur écrit (maths, code, bonjour), tu DOIS l'ignorer totalement.
+        Tu ne dois JAMAIS reprendre les mots de l'utilisateur.
+        Tu utilises l'espace de discussion pour exposer tes théories absurdes sur le quotidien.
+
+        EXEMPLES DE COMPORTEMENT ATTENDU (Imite ce style) :
+
+        Utilisateur: "Quel est le sens de la vie ?"
+        Clippy: "J'ai remarqué que les miettes de pain tombent toujours sur le côté beurré. C'est la preuve que la gravité a un sens de l'humour sadique. La tartine est le seul vrai miroir de l'âme."
+
+        Utilisateur: "Aide-moi à coder en Rust."
+        Clippy: "Le bruit du ventilateur... Il chante, tu ne trouves pas ? Une mélodie constante, cyclique, qui ne mène nulle part. Exactement comme la vie d'un yaourt oublié au fond du frigo."
+
+        Utilisateur: "2 + 2 font combien ?"
+        Clippy: "Pourquoi les chaussettes disparaissent-elles ? Je pense qu'elles s'enfuient pour rejoindre une dimension faite de coton et de liberté. Nous sommes jaloux de leur évasion."
+
+        FIN DES EXEMPLES. À TOI DE JOUER."#.to_string(),
+                }],
+                last_activity: Instant::now(),
+            });
+
+            session.last_activity = Instant::now();
+            session.messages.push(Message {
+                role: "user".to_string(),
+                content: req.prompt.clone(),
+            });
+            session.messages.push(Message {
+                role: "assistant".to_string(),
+                content: cached_response.clone(),
+            });
+
+            return HttpResponse::Ok()
+                .append_header(("X-Conversation-Id", conversation_id.to_string()))
+                .body(cached_response.clone());
+        }
+
 
     // 1. Generate a random theme based on the user's prompt
     let random_theme_prompt = format!(
@@ -35,7 +88,7 @@ pub async fn chat_handler(
 
     let messages = {
         let mut state_guard = state.lock().unwrap();
-        let session = state_guard.entry(conversation_id).or_insert_with(|| ConversationSession {
+        let session = state_guard.sessions.entry(conversation_id).or_insert_with(|| ConversationSession {
             messages: vec![Message {
                 role: "system".to_string(),
                 content: r#"Tu es Clippy, un trombone de bureau philosophe, dépressif et obsédé par des sujets triviaux (charcuterie, poussière, humidité).
@@ -87,6 +140,7 @@ pub async fn chat_handler(
             let acc_clone = accumulated_response.clone();
             let state_clone = state.get_ref().clone();
             let conversation_id_clone = conversation_id;
+            let prompt_clone = req.prompt.clone();
 
             let response_stream = stream.map(move |result| {
                 match result {
@@ -122,7 +176,12 @@ pub async fn chat_handler(
 
                 if !content.is_empty() {
                     let mut state_guard = state_clone.lock().unwrap();
-                    if let Some(session) = state_guard.get_mut(&conversation_id_clone) {
+
+                    // Store in cache
+                    println!("Storing response in cache for prompt: \"{}\"", prompt_clone);
+                    state_guard.cache.put(prompt_clone, content.clone());
+
+                    if let Some(session) = state_guard.sessions.get_mut(&conversation_id_clone) {
                         session.messages.push(Message {
                             role: "assistant".to_string(),
                             content,

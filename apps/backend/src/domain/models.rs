@@ -30,3 +30,12 @@ pub struct ConversationSession {
     pub messages: Vec<Message>,
     pub last_activity: std::time::Instant,
 }
+
+use lru::LruCache;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+pub struct AppStateInternal {
+    pub sessions: HashMap<Uuid, ConversationSession>,
+    pub cache: LruCache<String, String>,
+}
