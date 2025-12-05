@@ -5,6 +5,7 @@ import InputFieldTeleport from '../components/InputFieldTeleport.astro';
 import InputFieldLayout from '../components/InputFieldLayout.astro';
 import InputFieldNormal from '../components/InputFieldNormal.astro';
 import InputFieldRoulette from '../components/InputFieldRoulette.astro';
+import InputFieldRotaryPhone from '../components/InputFieldRotaryPhone.astro';
 ---
 
 <Layout>
@@ -42,11 +43,10 @@ import InputFieldRoulette from '../components/InputFieldRoulette.astro';
 					required
 				/>
 				
-				<InputField 
+				<InputFieldRotaryPhone
 					id="phone"
 					label="Numéro de téléphone"
-					type="tel"
-					placeholder="+33 6 12 34 56 78"
+					placeholder="+33 _ __ __ __ __"
 					required
 				/>
 				
