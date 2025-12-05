@@ -1,0 +1,265 @@
+/* Reset et styles globaux */
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Inter, sans-serif;
+    background: rgb(13, 13, 13);
+  }
+  
+  html {
+    overflow: hidden;
+  }
+  
+  /* Container principal */
+  #fake-captcha-root {
+    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: Inter, sans-serif;
+    background: rgb(13, 13, 13);
+    transition: background 0.5s, opacity 0.5s;
+    position: relative;
+    color: #fff;
+  }
+  
+  /* Cartes de contenu */
+  .captcha-card {
+    background: rgb(46, 46, 46);
+    padding: 40px 40px 32px 40px;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    max-width: 540px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .captcha-card h1 {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    color: #fff;
+  }
+  
+  .captcha-card p {
+    margin: 10px 0;
+    color: #ccc;
+  }
+  
+  /* Inputs */
+  input[type="text"],
+  input[type="number"] {
+    padding: 12px;
+    font-size: 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    text-align: center;
+    background: #fff;
+    color: #111;
+    font-family: inherit;
+  }
+  
+  input[type="text"]:focus,
+  input[type="number"]:focus {
+    outline: none;
+    border-color: rgb(203, 163, 35);
+  }
+  
+  /* Boutons */
+  button {
+    padding: 12px 24px;
+    background: rgb(203, 163, 35);
+    color: #111;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  
+  button:hover {
+    background: rgb(223, 183, 55);
+    transform: translateY(-1px);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  /* Bouton danger/skip */
+  .btn-danger {
+    background: #e63946;
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background: #d62839;
+  }
+  
+  /* Messages d'erreur */
+  .error-message {
+    color: #e63946;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+  
+  /* Grilles */
+  .grid-container {
+    display: grid;
+    gap: 12px;
+    margin: 30px auto;
+    justify-content: center;
+  }
+  
+  .grid-item {
+    background: #111;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+  
+  .grid-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .grid-item:active {
+    transform: scale(0.98);
+  }
+  
+  /* Sliders */
+  input[type="range"] {
+    width: 300px;
+    cursor: pointer;
+  }
+  
+  /* Canvas */
+  canvas {
+    border-radius: 8px;
+    margin-top: 20px;
+    display: block;
+  }
+  
+  /* Animation shake */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  .shake {
+    animation: shake 0.3s;
+  }
+  
+  /* Slider personnalisé */
+  .slider-container {
+    width: 80%;
+    height: 30px;
+    background: #ddd;
+    border-radius: 15px;
+    margin: 30px auto;
+    position: relative;
+    overflow: visible;
+  }
+  
+  .slider-knob {
+    width: 30px;
+    height: 30px;
+    background: rgb(203, 163, 35);
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    cursor: pointer;
+    touch-action: none;
+    border: 2px solid #111;
+    transition: transform 0.1s;
+  }
+  
+  .slider-knob:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Emoji et éléments visuels */
+  .emoji-large {
+    font-size: 40px;
+    padding: 16px;
+  }
+  
+  .color-preview {
+    width: 150px;
+    height: 150px;
+    border: 3px solid #333;
+    border-radius: 12px;
+    margin: 20px auto;
+    transition: background 0.3s;
+  }
+  
+  /* Timer displays */
+  .timer-display {
+    font-size: 28px;
+    margin: 20px 0;
+    color: #fff;
+    font-weight: bold;
+  }
+  
+  /* Hints et indices */
+  .hint-text {
+    color: #666;
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  
+  /* Maze target */
+  .maze-target {
+    width: 40px;
+    height: 40px;
+    background: #e63946;
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    transition: top 0.3s, left 0.3s;
+  }
+  
+  /* Memory game boxes */
+  .memory-box {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+  
+  .memory-box.active {
+    opacity: 1;
+  }
+  
+  /* Responsive */
+  @media (max-width: 600px) {
+    .captcha-card {
+      padding: 30px 20px;
+      max-width: 90%;
+    }
+  
+    .captcha-card h1 {
+      font-size: 22px;
+    }
+  
+    input[type="range"] {
+      width: 200px;
+    }
+  
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+  }
