@@ -1,1 +1,1 @@
-pub mod ollama_client;
+pub mod mistral_client;

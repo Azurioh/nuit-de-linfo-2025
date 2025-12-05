@@ -4,9 +4,9 @@ use rand::seq::SliceRandom;
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use std::collections::HashMap;
-use crate::domain::models::{ChatRequest, OllamaResponse, Message, ConversationSession, AppStateInternal};
+use crate::domain::models::{ChatRequest, MistralResponse, Message, ConversationSession, AppStateInternal};
 use crate::domain::errors::AppError;
-use crate::infrastructure::ollama_client::OllamaClient;
+use crate::infrastructure::mistral_client::MistralClient;
 use std::time::Instant;
 use redis::Commands;
 
@@ -15,7 +15,7 @@ type AppState = Arc<Mutex<AppStateInternal>>;
 #[post("/chat")]
 pub async fn chat_handler(
     req: web::Json<ChatRequest>,
-    ollama: web::Data<OllamaClient>,
+    mistral: web::Data<MistralClient>,
     state: web::Data<AppState>,
 ) -> Result<impl Responder, AppError> {
     let conversation_id = req.conversation_id.unwrap_or_else(Uuid::new_v4);
@@ -159,7 +159,7 @@ pub async fn chat_handler(
         generation_messages
     };
 
-    let stream = ollama.get_ref().clone().generate_chat_stream(messages).await?;
+    let stream = mistral.get_ref().clone().generate_chat_stream(messages).await?;
 
     let accumulated_response = Arc::new(Mutex::new(String::new()));
     let acc_clone = accumulated_response.clone();
@@ -167,15 +167,32 @@ pub async fn chat_handler(
     let conversation_id_clone = conversation_id;
     let prompt_clone = req.prompt.clone();
 
-    let response_stream = stream.map(move |result| {
+    let response_stream = stream.map(move |result: Result<actix_web::web::Bytes, reqwest::Error>| {
         match result {
             Ok(bytes) => {
                 let text = String::from_utf8_lossy(&bytes);
                 let mut chunk_text = String::new();
                 for line in text.lines() {
-                    if !line.trim().is_empty() {
-                        if let Ok(json) = serde_json::from_str::<OllamaResponse>(line) {
-                            chunk_text.push_str(&json.message.content);
+                    let line = line.trim();
+                    if !line.is_empty() {
+                        println!("Raw line from Mistral: {}", line); // Debug log
+                        if line == "data: [DONE]" {
+                            continue;
+                        }
+                        let json_str = if line.starts_with("data: ") {
+                            &line[6..]
+                        } else {
+                            line
+                        };
+
+                        if let Ok(json) = serde_json::from_str::<MistralResponse>(json_str) {
+                            if let Some(choice) = json.choices.first() {
+                                if let Some(content) = &choice.delta.content {
+                                    chunk_text.push_str(content);
+                                }
+                            }
+                        } else {
+                            println!("Failed to parse JSON: {}", json_str);
                         }
                     }
                 }

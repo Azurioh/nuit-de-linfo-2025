@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use uuid::Uuid;
 use crate::domain::models::{Message, ConversationSession, AppStateInternal};
 use redis::Client as RedisClient;
-use infrastructure::ollama_client::OllamaClient;
+use infrastructure::mistral_client::MistralClient;
 use std::time::{Duration, Instant};
 use actix_web::{rt, web, App, HttpServer, middleware::Compress};
 use rustls::{Certificate, PrivateKey, ServerConfig};
@@ -29,7 +29,7 @@ type AppState = Arc<Mutex<AppStateInternal>>;
 async fn main() -> std::io::Result<()> {
     let config = Config::init();
 
-    let ollama_client = OllamaClient::new(config.ollama_url, config.model_name);
+    let mistral_client = MistralClient::new(config.mistral_api_key, config.model_name);
     let redis_client = RedisClient::open("redis://redis:6379/").expect("Failed to create Redis client");
     let app_state: AppState = Arc::new(Mutex::new(AppStateInternal {
         sessions: HashMap::new(),
@@ -63,10 +63,12 @@ async fn main() -> std::io::Result<()> {
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:4321")
+            .allowed_origin("http://127.0.0.1:4321")
             .allowed_origin("https://nuit-de-linfo.azu-dev.fr")
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_methods(vec!["GET", "POST", "OPTIONS"])
             .allowed_headers(vec![actix_web::http::header::CONTENT_TYPE, actix_web::http::header::ACCEPT])
-
+            .expose_headers(vec!["X-Conversation-Id"])
+            .max_age(3600)
             .supports_credentials();
 
         // HTTP/2 TLS Config (Self-signed for dev)
@@ -87,9 +89,9 @@ async fn main() -> std::io::Result<()> {
             .unwrap();
 
         App::new()
-            .wrap(cors)
-            .wrap(Governor::new(&governor_conf))
-            .app_data(web::Data::new(ollama_client.clone()))
+            .wrap(Governor::new(&governor_conf)) // Rate limiting first
+            .wrap(cors) // CORS last (so it executes first and handles OPTIONS)
+            .app_data(web::Data::new(mistral_client.clone()))
             .app_data(web::Data::new(app_state.clone()))
             .service(chat_handler)
             .service(
@@ -99,30 +101,37 @@ async fn main() -> std::io::Result<()> {
             )
     });
 
+
+
     // Try to load TLS config for HTTP/2
     let tls_config = {
-        let cert_file = &mut BufReader::new(File::open("cert.pem")?);
-        let key_file = &mut BufReader::new(File::open("key.pem")?);
-        let cert_chain = certs(cert_file).unwrap().into_iter().map(Certificate).collect();
-        let mut keys = pkcs8_private_keys(key_file).unwrap().into_iter().map(PrivateKey).collect::<Vec<_>>();
+        // Only try to load if files exist
+        if std::path::Path::new("cert.pem").exists() && std::path::Path::new("key.pem").exists() {
+            let cert_file = &mut BufReader::new(File::open("cert.pem")?);
+            let key_file = &mut BufReader::new(File::open("key.pem")?);
+            let cert_chain = certs(cert_file).unwrap().into_iter().map(Certificate).collect();
+            let mut keys = pkcs8_private_keys(key_file).unwrap().into_iter().map(PrivateKey).collect::<Vec<_>>();
 
-        if keys.is_empty() {
-             None
+            if keys.is_empty() {
+                 None
+            } else {
+                let config = ServerConfig::builder()
+                    .with_safe_defaults()
+                    .with_no_client_auth()
+                    .with_single_cert(cert_chain, keys.remove(0))
+                    .expect("bad certificate/key");
+                Some(config)
+            }
         } else {
-            let config = ServerConfig::builder()
-                .with_safe_defaults()
-                .with_no_client_auth()
-                .with_single_cert(cert_chain, keys.remove(0))
-                .expect("bad certificate/key");
-            Some(config)
+            None
         }
     };
 
     if let Some(config) = tls_config {
-        println!("HTTP/2 Enabled (TLS)");
+        println!("HTTP/2 Enabled (TLS) running on {}", Config::init().server_address);
         server.bind_rustls(Config::init().server_address, config)?.run().await
     } else {
-        println!("HTTP/1.1 Enabled (No TLS found)");
+        println!("HTTP/1.1 Enabled (No TLS found) running on {}", Config::init().server_address);
         server.bind(Config::init().server_address)?.run().await
     }
 }

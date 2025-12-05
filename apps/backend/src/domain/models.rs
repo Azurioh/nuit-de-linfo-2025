@@ -13,17 +13,26 @@ pub struct Message {
     pub content: String,
 }
 
-#[derive(Serialize)]
-pub struct OllamaChatRequest {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct MistralChatRequest {
     pub model: String,
     pub messages: Vec<Message>,
     pub stream: bool,
 }
 
-#[derive(Deserialize)]
-pub struct OllamaResponse {
-    pub message: Message,
-    pub done: bool,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MistralResponse {
+    pub choices: Vec<Choice>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Choice {
+    pub delta: Delta,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Delta {
+    pub content: Option<String>,
 }
 
 pub struct ConversationSession {
