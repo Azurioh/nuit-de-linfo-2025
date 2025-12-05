@@ -16,6 +16,7 @@ use api::chat_route::{chat_handler, hello};
 
 use lru::LruCache;
 use std::num::NonZeroUsize;
+use actix_governor::{Governor, GovernorConfigBuilder};
 
 type AppState = Arc<Mutex<AppStateInternal>>;
 
@@ -60,8 +61,15 @@ async fn main() -> std::io::Result<()> {
             .allowed_headers(vec![actix_web::http::header::CONTENT_TYPE, actix_web::http::header::ACCEPT])
             .supports_credentials();
 
+        let governor_conf = GovernorConfigBuilder::default()
+            .period(Duration::from_secs(1))
+            .burst_size(10)
+            .finish()
+            .unwrap();
+
         App::new()
             .wrap(cors)
+            .wrap(Governor::new(&governor_conf))
             .app_data(web::Data::new(ollama_client.clone()))
             .app_data(web::Data::new(app_state.clone()))
             .service(chat_handler)
