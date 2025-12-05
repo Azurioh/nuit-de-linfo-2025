@@ -17,14 +17,36 @@ pub async fn chat_handler(
 ) -> impl Responder {
     let conversation_id = req.conversation_id.unwrap_or_else(Uuid::new_v4);
 
-    // Check cache
+    // Check cache with fuzzy matching
     let cached_response = {
         let mut state_guard = state.lock().unwrap();
-        state_guard.cache.get(&req.prompt).cloned()
+        let mut found_response = None;
+        let mut best_match_key = None;
+        let mut best_score = 0.0;
+
+        // Direct match first (fast path)
+        if let Some(response) = state_guard.cache.get(&req.prompt) {
+             found_response = Some(response.clone());
+             println!("Cache HIT (Exact) for prompt: \"{}\"", req.prompt);
+        } else {
+             // Fuzzy match
+             for (key, _) in state_guard.cache.iter() {
+                 let score = strsim::normalized_levenshtein(&req.prompt, key);
+                 if score > 0.6 && score > best_score {
+                     best_score = score;
+                     best_match_key = Some(key.clone());
+                 }
+             }
+
+             if let Some(key) = best_match_key {
+                 println!("Cache HIT (Fuzzy) for prompt: \"{}\" (matched: \"{}\", score: {:.2})", req.prompt, key, best_score);
+                 found_response = state_guard.cache.get(&key).cloned();
+             }
+        }
+        found_response
     };
 
     if let Some(cached_response) = cached_response {
-        println!("Cache HIT for prompt: \"{}\"", req.prompt);
         let mut state_guard = state.lock().unwrap();
         // Update history
         let session = state_guard.sessions.entry(conversation_id).or_insert_with(|| ConversationSession {
