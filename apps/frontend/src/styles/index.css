@@ -1,0 +1,161 @@
+.slogan {
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 600px;
+    padding: 50px;
+    border-bottom: 1px solid rgb(46, 46, 46);
+    background-color: rgb(20, 20, 20);
+}
+
+.slogan p {
+    width: 40%;
+    color: white;
+    font-size: 40px;
+
+    strong {
+        color: rgb(203, 163, 35);
+    }
+}
+
+.slogan picture {
+    width: 50%;
+    height: auto;
+    margin-left: 20px;
+}
+
+.problem {
+    display: flex;
+    flex-direction: row;
+    height: 500px;
+    gap: 50px;
+    align-items: center;
+    justify-content: center;
+}
+
+.problem .content {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: start;
+    flex-direction: column;
+    color: white;
+    width: 600px;
+}
+
+.problem .content .text {
+    display: flex;
+    justify-content: flex-start;
+    align-items: start;
+    flex-direction: column;
+    color: grey;
+    width: 500px;
+}
+
+.problem .content .text strong {
+    color: white;
+}
+
+
+.problem .content .text .bullet-point .bullet {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.problem .content .text .bullet-point .x {
+    color: red;
+    font-weight: lighter;
+    padding-right: 5px;
+}
+
+.problem .content .title {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    color: white;
+    gap: 20px;
+}
+
+.problem .key-numbers {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgb(46, 46, 46);
+    width: 30%;
+    border-radius: 5px;
+    background-color: rgb(20, 20, 20);
+}
+
+.problem .key-numbers:hover {
+    border-color: red;
+}
+
+.problem .key-numbers .header {
+    display: flex;
+    color: red;
+    font-size: 20px;
+    font-weight: bold;
+    gap: 10px;
+    align-items: center;
+    margin-left: 40px;
+}
+
+.problem .key-numbers div {
+    display: flex;
+    justify-content: space-around;
+}
+
+.problem .key-numbers div .fact {
+    color: grey;
+}
+
+.problem .key-numbers .key-1 .number {
+    color: white;
+    font-weight: bold;
+}
+
+.problem .key-numbers .key-2 .number {
+    color: red;
+    font-weight: bold;
+}
+
+.problem .key-numbers .key-3 .number {
+    color: red;
+    font-weight: bold;
+}
+
+.problem .key-numbers .separator {
+    align-self: center;
+    border-bottom: 1px solid rgb(46, 46, 46);
+    width: 85%;
+}
+
+.solution {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    flex-direction: column;
+    height: 180px;
+    gap: 30px;
+    background-color: rgb(20, 20, 20);
+    border-bottom: 1px solid rgb(46, 46, 46);
+}
+
+.solution .title h1 {
+    color: white;
+
+    strong {
+        color: rgb(203, 163, 35);
+    }
+}
+
+.solution .more-information a {
+    border: rgb(203, 163, 35) 1px solid;
+    padding: 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: rgb(203, 163, 35);
+    font-weight: bold;
+}

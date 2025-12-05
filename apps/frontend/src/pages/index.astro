@@ -1,11 +1,127 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Footer from "../components/Footer.astro";
+import Navbar from "../components/Navbar.astro";
+import Layout from "../layouts/Layout.astro";
+import "../styles/index.css";
 ---
 
 <Layout>
-	<Welcome />
+	<Navbar />
+	<div class="slogan">
+		<p>
+			UN NUMÉRIQUE <strong>LIBRE</strong> ET <strong>ÉCOCITOYEN</strong> DANS
+			LES <strong>ÉTABLISSEMENTS SCOLAIRES</strong>
+		</p>
+		<picture>
+			<img src="/image.png" />
+		</picture>
+		<!-- <img src="/image.png"> -->
+	</div>
+	<div class="problem">
+		<div class="content">
+			<div class="title">
+				<svg width="60px" height="60px" viewBox="0 0 32 32">
+					<path
+						d="M16 4L2 28h28L16 4z"
+						stroke="rgb(158, 89, 56)"
+						stroke-width="2"
+						fill="rgb(158, 89, 56)"
+						fill-opacity="0.1"></path>
+					<path
+						d="M16 12v8M16 24v2"
+						stroke="rgb(158, 89, 56)"
+						stroke-width="2"
+						stroke-linecap="round"></path>
+				</svg>
+				<h1>La fin de Windows 10</h1>
+			</div>
+			<div class="text">
+				<p>
+					En octobre 2025, Microsoft mettra fin au support de Windows
+					10. Cela signifie : <strong
+						>plus de mises à jour de sécurité</strong
+					>.
+				</p>
+				<p>
+					Les établissements scolaires seront alors face à un choix
+					imposé :
+				</p>
+				<div class="bullet-point">
+					<div class="bullet">
+						<p class="x">x</p>
+						<p>
+							Migrer vers Windows 11, incompatible avec la
+							majorité du parc informatique existant
+						</p>
+					</div>
+					<div class="bullet">
+						<p class="x">x</p>
+						<p>Jeter des ordinateurs parfaitement fonctionnels</p>
+					</div>
+					<div class="bullet">
+						<p class="x">x</p>
+						<p>Racheter du matériel neuf à grands frais</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="key-numbers">
+			<p class="header">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="red">
+					<circle
+						cx="10"
+						cy="10"
+						r="9"
+						stroke="red"
+						stroke-width="2"
+						fill="none"></circle>
+					<path
+						d="M10 5v6M10 13v2"
+						stroke="red"
+						stroke-width="2"
+						stroke-linecap="round"></path>
+				</svg>
+				Chiffres clés
+			</p>
+			<div class="key-1">
+				<p class="fact">PC sous Windows 10 en France</p>
+				<p class="number">~70%</p>
+			</div>
+			<div class="separator"></div>
+			<div class="key-2">
+				<p class="fact">PC incompatibles Windows 11</p>
+				<p class="number">~40%</p>
+			</div>
+			<div class="separator"></div>
+			<div class="key-3">
+				<p class="fact">Tonnes de déchets potentiels</p>
+				<p class="number">Millions</p>
+			</div>
+		</div>
+	</div>
+	<div class="solution">
+		<div class="title">
+			<h1>La Potion Magique: <strong>NIRD</strong></h1>
+		</div>
+		<div class="more-information">
+			<a href="https://nird.forge.apps.education.fr/linux/">
+				Plus d'information sur NIRD
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 14 14"
+					fill="none"
+					class="inline-block"
+				>
+					<path
+						d="M10 1h3v3M6 8l7-7M9 3.5V11a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1h7.5"
+						stroke="currentColor"
+						stroke-width="1.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"></path>
+				</svg>
+			</a>
+		</div>
+	</div>
+	<Footer />
 </Layout>
