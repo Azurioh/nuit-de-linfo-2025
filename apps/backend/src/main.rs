@@ -62,6 +62,7 @@ async fn main() -> std::io::Result<()> {
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()
+            .allowed_origin("https://nuit-de-linfo-2025-website.s3-website.fr-par.scw.cloud")
             .allowed_origin("http://localhost:4321")
             .allowed_origin("http://127.0.0.1:4321")
             .allowed_origin("https://nuit-de-linfo.azu-dev.fr")
