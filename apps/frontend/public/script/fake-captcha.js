@@ -901,16 +901,16 @@ steps.push(() => {
     root.innerHTML = `
       <div class="captcha-card">
         <h1>🎉 Félicitations !</h1>
-        <p style="font-size:20px;margin-top:20px;">Vous avez terminé toutes les épreuves.</p>
-        <p style="margin-top:15px;font-size:16px;color:#666;">Merci d'avoir joué au faux CAPTCHA le plus inutile de l'histoire.</p>
+        <p style="font-size:20px;margin-top:20px;">Vous êtes désormais inscrit sur notre site.</p>
+        <p style="margin-top:15px;font-size:16px;color:#666;">Merci d'avoir complété toutes les étapes de vérification.</p>
         <button id="finishBtn" style="margin-top:30px;padding:14px 28px;font-size:18px;">Terminer</button>
       </div>
     `;
 
     document.getElementById("finishBtn").addEventListener("click", () => {
       root.innerHTML = `
-        <h1>😎 Félicitations, vous êtes inscrit.</h1>
-        <p style="margin-top:20px;font-size:18px;color:#444;">(Enfin... normalement.)</p>
+        <h1>✅ Inscription réussie !</h1>
+        <p style="margin-top:20px;font-size:18px;color:#444;">Bienvenue parmi nous.</p>
       `;
     });
   });
