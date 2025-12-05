@@ -25,6 +25,200 @@ import "../../src/styles/captcha.css";
     }
   }
 
+steps.push(() => {
+  root.innerHTML = `
+    <div class="captcha-card">
+      <h1>Visez les cibles !</h1>
+      <p>Cliquez sur 8 cibles avant qu'elles disparaissent</p>
+      <div id="targetArea" style="position:relative;width:100%;height:300px;background:#1a1a1a;border-radius:12px;margin-top:20px;overflow:hidden;"></div>
+      <p id="targetScore" style="margin-top:15px;font-size:20px;font-weight:bold;">0 / 8</p>
+    </div>
+  `;
+
+  const area = document.getElementById("targetArea");
+  const scoreDisplay = document.getElementById("targetScore");
+  let hits = 0;
+
+  function spawnTarget() {
+    if (hits >= 8) return;
+
+    const target = document.createElement("div");
+    target.className = "popup-target";
+    target.style.left = Math.random() * (area.clientWidth - 60) + "px";
+    target.style.top = Math.random() * (area.clientHeight - 60) + "px";
+    area.appendChild(target);
+
+    const timeout = setTimeout(() => {
+      target.remove();
+      if (hits < 8) spawnTarget();
+    }, 1500);
+
+    target.addEventListener("click", () => {
+      clearTimeout(timeout);
+      hits++;
+      scoreDisplay.textContent = `${hits} / 8`;
+      target.style.background = "#2a9d8f";
+      target.style.transform = "scale(1.3)";
+      setTimeout(() => target.remove(), 200);
+
+      if (hits >= 8) {
+        setTimeout(nextStep, 500);
+      } else {
+        setTimeout(spawnTarget, 400);
+      }
+    });
+  }
+
+  spawnTarget();
+});
+
+steps.push(() => {
+  const fakeText = `CONDITIONS GÉNÉRALES D'UTILISATION
+
+Article 1 - Dispositions générales
+Les présentes Conditions Générales d'Utilisation (ci-après "CGU") régissent l'utilisation de ce faux CAPTCHA totalement inutile. En utilisant ce service, vous acceptez sans réserve les présentes CGU.
+
+Article 2 - Objet
+Ce CAPTCHA n'a strictement aucune utilité. Il ne vérifie rien et ne protège contre aucun bot. Son seul objectif est de vous faire perdre votre temps de manière ludique.
+
+Article 3 - Obligations de l'utilisateur
+L'utilisateur s'engage à :
+- Compléter toutes les épreuves absurdes proposées
+- Ne pas râler contre la longueur excessive de ces CGU
+- Accepter que tout ceci est parfaitement inutile
+- Reconnaître qu'il aurait pu faire quelque chose de productif à la place
+
+Article 4 - Données personnelles
+Nous ne collectons aucune donnée. Vraiment. Ce serait trop d'efforts pour un projet aussi futile.
+
+Article 5 - Propriété intellectuelle
+Tous les mini-jeux ridicules contenus dans ce CAPTCHA sont notre propriété exclusive. Toute reproduction est autorisée car franchement, qui voudrait copier ça ?
+
+Article 6 - Responsabilité
+Nous déclinons toute responsabilité concernant :
+- Le temps perdu à compléter ce CAPTCHA
+- La frustration engendrée par certaines épreuves
+- L'impression d'avoir fait quelque chose d'inutile
+- Les dommages psychologiques causés par le puzzle taquin
+
+Article 7 - Durée et résiliation
+Ces CGU s'appliquent tant que vous êtes sur cette page. Vous pouvez les résilier à tout moment en fermant l'onglet.
+
+Article 8 - Modifications
+Nous nous réservons le droit de modifier ces CGU à tout moment, sans préavis, juste pour embêter les gens qui les lisent vraiment.
+
+Article 9 - Litiges
+En cas de litige, bonne chance pour nous retrouver.
+
+Article 10 - Loi applicable
+Ces CGU sont régies par les lois de l'absurde et du temps perdu.
+
+`.repeat(3);
+
+  root.innerHTML = `
+    <div class="captcha-card" style="max-width:600px;">
+      <h1>Conditions Générales d'Utilisation</h1>
+      <p>Veuillez lire attentivement et faire défiler jusqu'en bas</p>
+      <div id="cguScroll" class="cgu-scroll">${fakeText}</div>
+      <label style="display:flex;align-items:center;justify-content:center;margin-top:20px;opacity:0.3;" id="cguCheckLabel">
+        <input type="checkbox" id="cguCheck" disabled style="width:auto;margin-right:10px;">
+        <span>J'ai lu et j'accepte les CGU (faites défiler en bas)</span>
+      </label>
+      <button id="cguBtn" disabled style="margin-top:15px;opacity:0.3;">Continuer</button>
+    </div>
+  `;
+
+  const scroll = document.getElementById("cguScroll");
+  const checkbox = document.getElementById("cguCheck");
+  const checkLabel = document.getElementById("cguCheckLabel");
+  const btn = document.getElementById("cguBtn");
+
+  scroll.addEventListener("scroll", () => {
+    const isBottom = scroll.scrollHeight - scroll.scrollTop <= scroll.clientHeight + 10;
+    if (isBottom) {
+      checkbox.disabled = false;
+      checkLabel.style.opacity = "1";
+    }
+  });
+
+  checkbox.addEventListener("change", () => {
+    if (checkbox.checked) {
+      btn.disabled = false;
+      btn.style.opacity = "1";
+    }
+  });
+
+  btn.addEventListener("click", nextStep);
+});
+
+steps.push(() => {
+  root.innerHTML = `
+    <div class="captcha-card">
+      <h1>Connectez les points</h1>
+      <p>Cliquez sur les numéros dans l'ordre (1 → 10)</p>
+      <div id="dotsArea" style="position:relative;width:100%;height:350px;background:#1a1a1a;border-radius:12px;margin-top:20px;">
+        <canvas id="dotsCanvas" width="540" height="350" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
+      </div>
+    </div>
+  `;
+
+  const area = document.getElementById("dotsArea");
+  const canvas = document.getElementById("dotsCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const dots = [];
+  for (let i = 1; i <= 10; i++) {
+    const x = Math.random() * 440 + 50;
+    const y = Math.random() * 250 + 50;
+    dots.push({ num: i, x, y });
+  }
+
+  let current = 1;
+  const lines = [];
+
+  dots.forEach(dot => {
+    const el = document.createElement("div");
+    el.className = "connect-dot";
+    el.textContent = dot.num;
+    el.style.left = dot.x - 20 + "px";
+    el.style.top = dot.y - 20 + "px";
+
+    el.addEventListener("click", () => {
+      if (dot.num === current) {
+        el.classList.add("connected");
+        
+        if (current > 1) {
+          const prev = dots.find(d => d.num === current - 1);
+          lines.push({ x1: prev.x, y1: prev.y, x2: dot.x, y2: dot.y });
+          drawLines();
+        }
+
+        current++;
+        if (current > 10) {
+          setTimeout(nextStep, 500);
+        }
+      } else {
+        el.classList.add("shake");
+        setTimeout(() => el.classList.remove("shake"), 300);
+      }
+    });
+
+    area.appendChild(el);
+  });
+
+  function drawLines() {
+    ctx.clearRect(0, 0, 540, 350);
+    ctx.strokeStyle = "#e9c46a";
+    ctx.lineWidth = 3;
+    lines.forEach(line => {
+      ctx.beginPath();
+      ctx.moveTo(line.x1, line.y1);
+      ctx.lineTo(line.x2, line.y2);
+      ctx.stroke();
+    });
+  }
+});
+
   steps.push(() => {
     root.innerHTML = `
       <div class="captcha-card">
@@ -715,7 +909,7 @@ import "../../src/styles/captcha.css";
 
     document.getElementById("finishBtn").addEventListener("click", () => {
       root.innerHTML = `
-        <h1>😎 C'est bon, vous êtes humain.</h1>
+        <h1>😎 Félicitations, vous êtes inscrit.</h1>
         <p style="margin-top:20px;font-size:18px;color:#444;">(Enfin... normalement.)</p>
       `;
     });
