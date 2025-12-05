@@ -8,6 +8,7 @@ use crate::domain::models::{ChatRequest, OllamaResponse, Message, ConversationSe
 use crate::domain::errors::AppError;
 use crate::infrastructure::ollama_client::OllamaClient;
 use std::time::Instant;
+use redis::Commands;
 
 type AppState = Arc<Mutex<AppStateInternal>>;
 
@@ -26,11 +27,24 @@ pub async fn chat_handler(
         let mut best_match_key = None;
         let mut best_score = 0.0;
 
-        // Direct match first (fast path)
+        // Direct match first (fast path - Memory)
         if let Some(response) = state_guard.cache.get(&req.prompt) {
              found_response = Some(response.clone());
-             println!("Cache HIT (Exact) for prompt: \"{}\"", req.prompt);
+             println!("Memory Cache HIT (Exact) for prompt: \"{}\"", req.prompt);
         } else {
+             // Check Redis
+             let mut con = state_guard.redis.get_connection().ok();
+             if let Some(ref mut con) = con {
+                 if let Ok(response) = con.get::<_, String>(&req.prompt) {
+                     found_response = Some(response.clone());
+                     // Populate memory cache
+                     state_guard.cache.put(req.prompt.clone(), response);
+                     println!("Redis Cache HIT for prompt: \"{}\"", req.prompt);
+                 }
+             }
+        }
+
+        if found_response.is_none() {
              // Fuzzy match
              for (key, _) in state_guard.cache.iter() {
                  let score = strsim::normalized_levenshtein(&req.prompt, key);
@@ -188,9 +202,14 @@ pub async fn chat_handler(
         if !content.is_empty() {
             let mut state_guard = state_clone.lock().unwrap();
 
-            // Store in cache
+            // Store in memory cache
             println!("Storing response in cache for prompt: \"{}\"", prompt_clone);
-            state_guard.cache.put(prompt_clone, content.clone());
+            state_guard.cache.put(prompt_clone.clone(), content.clone());
+
+            // Store in Redis (TTL 1 hour)
+            if let Ok(mut con) = state_guard.redis.get_connection() {
+                let _: redis::RedisResult<()> = con.set_ex(prompt_clone, content.clone(), 3600);
+            }
 
             if let Some(session) = state_guard.sessions.get_mut(&conversation_id_clone) {
                 session.messages.push(Message {

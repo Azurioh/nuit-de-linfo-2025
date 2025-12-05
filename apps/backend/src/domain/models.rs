@@ -38,4 +38,5 @@ use std::sync::{Arc, Mutex};
 pub struct AppStateInternal {
     pub sessions: HashMap<Uuid, ConversationSession>,
     pub cache: LruCache<String, String>,
+    pub redis: redis::Client,
 }

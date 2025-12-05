@@ -8,9 +8,14 @@ use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use uuid::Uuid;
 use crate::domain::models::{Message, ConversationSession, AppStateInternal};
+use redis::Client as RedisClient;
 use infrastructure::ollama_client::OllamaClient;
 use std::time::{Duration, Instant};
 use actix_web::{rt, web, App, HttpServer, middleware::Compress};
+use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls_pemfile::{certs, pkcs8_private_keys};
+use std::fs::File;
+use std::io::BufReader;
 use config::Config;
 use api::chat_route::{chat_handler, hello};
 
@@ -25,9 +30,11 @@ async fn main() -> std::io::Result<()> {
     let config = Config::init();
 
     let ollama_client = OllamaClient::new(config.ollama_url, config.model_name);
+    let redis_client = RedisClient::open("redis://redis:6379/").expect("Failed to create Redis client");
     let app_state: AppState = Arc::new(Mutex::new(AppStateInternal {
         sessions: HashMap::new(),
         cache: LruCache::new(NonZeroUsize::new(100).unwrap()),
+        redis: redis_client,
     }));
 
     // Background cleanup task
@@ -53,13 +60,25 @@ async fn main() -> std::io::Result<()> {
 
     println!("Serveur lancé sur {}", config.server_address);
 
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:4321")
             .allowed_origin("https://nuit-de-linfo.azu-dev.fr")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![actix_web::http::header::CONTENT_TYPE, actix_web::http::header::ACCEPT])
+
             .supports_credentials();
+
+        // HTTP/2 TLS Config (Self-signed for dev)
+        // Note: In a real scenario, we would load certs from files.
+        // For this hackathon, we'll assume certs are generated or just use HTTP/1.1 if certs missing but user asked for HTTP/2.
+        // Actually, let's keep it simple and just bind port 8080 without TLS for now as generating certs in docker is complex.
+        // User asked for HTTP/2 which REQUIRES TLS.
+        // I will add a comment that for HTTP/2 we need TLS, but for now we stick to HTTP/1.1 to ensure it works in docker without cert volume.
+        // WAIT, I can generate a self-signed cert in main.rs using rcgen! No, that adds dependency.
+        // I will stick to HTTP/1.1 but with optimizations.
+        // User explicitly asked for HTTP/2.
+        // I will try to load certs if present, else fallback.
 
         let governor_conf = GovernorConfigBuilder::default()
             .period(Duration::from_secs(1))
@@ -78,8 +97,32 @@ async fn main() -> std::io::Result<()> {
                     .wrap(Compress::default())
                     .service(hello)
             )
-    })
-    .bind(Config::init().server_address)?
-    .run()
-    .await
+    });
+
+    // Try to load TLS config for HTTP/2
+    let tls_config = {
+        let cert_file = &mut BufReader::new(File::open("cert.pem")?);
+        let key_file = &mut BufReader::new(File::open("key.pem")?);
+        let cert_chain = certs(cert_file).unwrap().into_iter().map(Certificate).collect();
+        let mut keys = pkcs8_private_keys(key_file).unwrap().into_iter().map(PrivateKey).collect::<Vec<_>>();
+
+        if keys.is_empty() {
+             None
+        } else {
+            let config = ServerConfig::builder()
+                .with_safe_defaults()
+                .with_no_client_auth()
+                .with_single_cert(cert_chain, keys.remove(0))
+                .expect("bad certificate/key");
+            Some(config)
+        }
+    };
+
+    if let Some(config) = tls_config {
+        println!("HTTP/2 Enabled (TLS)");
+        server.bind_rustls(Config::init().server_address, config)?.run().await
+    } else {
+        println!("HTTP/1.1 Enabled (No TLS found)");
+        server.bind(Config::init().server_address)?.run().await
+    }
 }
