@@ -17,7 +17,7 @@ use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::fs::File;
 use std::io::BufReader;
 use config::Config;
-use api::chat_route::{chat_handler, hello};
+use api::chat_route::{chat_handler, hello, health};
 
 use lru::LruCache;
 use std::num::NonZeroUsize;
@@ -98,6 +98,7 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/api")
                     .wrap(Compress::default())
                     .service(hello)
+                    .service(health)
             )
     });
 
