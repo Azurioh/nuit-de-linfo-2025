@@ -255,6 +255,13 @@ pub async fn hello() -> impl Responder {
         .json(serde_json::json!({"message": "Hello, world!"}))
 }
 
+#[get("/health")]
+pub async fn health() -> impl Responder {
+    HttpResponse::Ok()
+        .append_header(("Cache-Control", "public, max-age=3600"))
+        .json(serde_json::json!({"message": "I'm alive!"}))
+}
+
 fn get_random_theme() -> String {
     let sujets = vec![
         "Le pigeon", "La chaussette", "Le trombone", "L'agrafeuse", "Le yaourt",
